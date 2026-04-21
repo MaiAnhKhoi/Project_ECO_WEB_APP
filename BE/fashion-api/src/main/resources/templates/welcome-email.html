@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            color: #9C27B0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #9C27B0;
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Welcome to Fashion Shop! 🎉</h1>
+        
+        <p>Hello <strong th:text="${name}">User</strong>,</p>
+        
+        <p>Your account has been successfully created and verified. You can now enjoy all the features of our platform!</p>
+        
+        <p>Here's what you can do:</p>
+        <ul>
+            <li>Browse our latest fashion collections</li>
+            <li>Add items to your wishlist</li>
+            <li>Make purchases with secure checkout</li>
+            <li>Track your orders</li>
+            <li>Leave reviews for products</li>
+        </ul>
+        
+        <div style="text-align: center;">
+            <a href="http://localhost:3000" class="button">Start Shopping</a>
+        </div>
+        
+        <p>If you have any questions, feel free to contact our support team.</p>
+        
+        <div class="footer">
+            <p>&copy; 2024 Fashion Shop. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+

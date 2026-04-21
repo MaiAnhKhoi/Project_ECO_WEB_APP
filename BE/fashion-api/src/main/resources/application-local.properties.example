@@ -1,0 +1,34 @@
+# Sao chep file nay thanh: application-local.properties
+# (application-local.properties da duoc .gitignore — khong push len Git).
+#
+# Chay Spring Boot voi profile local, vi du:
+#   mvn spring-boot:run -Dspring-boot.run.profiles=local
+# Hoac IntelliJ: Active profiles = local
+# Hoac PowerShell: $env:SPRING_PROFILES_ACTIVE = "local"
+
+# spring.mail.username=
+# spring.mail.password=
+
+# jwt.secret=chuoi-du-dai-toi-thieu-256-bit-cho-hs512
+
+# payos.client-id=
+# payos.api-key=
+# payos.checksum-key=
+# payos.return-url=http://localhost:3000/payment/payos/callback
+# payos.cancel-url=http://localhost:3000/payment/payos/cancel
+
+# sepay.api-token=
+# sepay.bank-account-number=
+# sepay.base-url=https://my.sepay.vn
+
+# app.storage.cloudinary.cloud-name=
+# app.storage.cloudinary.api-key=
+# app.storage.cloudinary.api-secret=
+# app.storage.cloudinary.folder=fashion-products
+# app.storage.cloudinary.upload-preset=
+
+# replicate.api.token=
+
+# Tuy chon: DB / Redis neu khac mac dinh trong application.properties
+# spring.datasource.password=
+# spring.data.redis.password=

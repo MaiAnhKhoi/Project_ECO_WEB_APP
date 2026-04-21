@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            color: #4CAF50;
+        }
+        .code-box {
+            background-color: #fff;
+            border: 2px dashed #4CAF50;
+            border-radius: 5px;
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            margin: 20px 0;
+            letter-spacing: 5px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Verify Your Email Address</h1>
+        
+        <p>Hello <strong th:text="${name}">User</strong>,</p>
+        
+        <p>Thank you for registering! Please use the verification code below to verify your email address:</p>
+        
+        <div class="code-box" th:text="${code}">123456</div>
+        
+        <p>This code will expire in 10 minutes.</p>
+        
+        <p>If you didn't request this, please ignore this email.</p>
+        
+        <div class="footer">
+            <p>&copy; 2024 Fashion Shop. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+

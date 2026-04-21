@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lời Mời Tham Gia Đội Ngũ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            color: #2196F3;
+        }
+        .button {
+            display: inline-block;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .roles-list {
+            background-color: #fff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">🎉 Bạn Được Mời Tham Gia Đội Ngũ Của Chúng Tôi!</h1>
+        
+        <p>Xin chào,</p>
+        
+        <p><strong th:text="${inviterName}">Admin</strong> đã mời bạn tham gia <strong th:text="${shopName}">Fashion Shop</strong> với vai trò nhân viên.</p>
+        
+        <div class="roles-list">
+            <strong>Vai trò được phân công:</strong>
+            <ul>
+                <li th:each="role : ${roles}" th:text="${role}">Role Name</li>
+            </ul>
+        </div>
+        
+        <p th:if="${customMessage != null and customMessage != ''}" style="background-color: #fff; padding: 15px; border-left: 4px solid #4CAF50; margin: 15px 0;">
+            <strong>Lời nhắn:</strong><br/>
+            <span th:text="${customMessage}">Custom message here</span>
+        </p>
+        
+        <p>Vui lòng click vào nút bên dưới để chấp nhận lời mời và thiết lập tài khoản của bạn:</p>
+        
+        <div style="text-align: center;">
+            <a th:href="${invitationUrl}" class="button">Chấp Nhận Lời Mời</a>
+        </div>
+        
+        <p>Hoặc copy link sau vào trình duyệt:</p>
+        <p style="word-break: break-all; color: #2196F3;" th:text="${invitationUrl}">URL</p>
+        
+        <p><strong>Lưu ý:</strong> Lời mời này sẽ hết hạn sau 24 giờ.</p>
+        
+        <p>Nếu bạn không mong đợi lời mời này, vui lòng bỏ qua email.</p>
+        
+        <div class="footer">
+            <p>&copy; 2024 <span th:text="${shopName}">Fashion Shop</span>. All rights reserved.</p>
+            <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+        </div>
+    </div>
+</body>
+</html>
+

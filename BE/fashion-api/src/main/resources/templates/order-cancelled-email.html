@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đơn hàng đã bị hủy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            color: #f44336;
+        }
+        .order-info {
+            background-color: #fff;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .amount {
+            font-size: 24px;
+            color: #4CAF50;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+        .button {
+            display: inline-block;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">🚫 Đơn Hàng Đã Bị Hủy</h1>
+        
+        <p>Xin chào <strong th:text="${customerName}">Khách hàng</strong>,</p>
+        
+        <p>Chúng tôi xin thông báo rằng đơn hàng của bạn đã bị hủy.</p>
+        
+        <div class="order-info">
+            <p><strong>Mã đơn hàng:</strong> <span th:text="${orderCode}">#ORDER123</span></p>
+            <p><strong>Lý do hủy:</strong> <span th:text="${cancelReason}">Không có lý do</span></p>
+        </div>
+        
+        <div class="amount">
+            <p>Số tiền hoàn lại (nếu có):</p>
+            <p th:text="${refundAmount}">0 ₫</p>
+        </div>
+        
+        <p><strong>Số tiền sẽ được hoàn về tài khoản của bạn trong vòng 5-7 ngày làm việc.</strong></p>
+        
+        <p>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua:</p>
+        <ul>
+            <li>Email: <a th:href="'mailto:' + ${supportEmail}" th:text="${supportEmail}">support@shop.com</a></li>
+            <li>Hotline: 1900 xxxx</li>
+        </ul>
+        
+        <p>Chúng tôi rất tiếc vì sự bất tiện này và mong được phục vụ bạn trong tương lai.</p>
+        
+        <div class="footer">
+            <p>&copy; 2024 <span th:text="${shopName}">Fashion Shop</span>. All rights reserved.</p>
+            <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+        </div>
+    </div>
+</body>
+</html>
+
