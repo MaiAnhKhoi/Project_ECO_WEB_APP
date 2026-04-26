@@ -38,8 +38,11 @@ export function usePagedList<T>(
   opts?: Options<T>,
 ) {
   const pageSize = opts?.pageSize ?? 16;
-  const getKey = opts?.getKey;
   const enabled = opts?.enabled !== false;
+
+  /** Tránh inline getKey ở call-site (mỗi render là hàm mới) làm applyPage đổi → useEffect lặp vô hạn. */
+  const getKeyRef = useRef(opts?.getKey);
+  getKeyRef.current = opts?.getKey;
 
   const [items, setItems] = useState<T[]>([]);
   const [totalElements, setTotalElements] = useState(0);
@@ -56,6 +59,7 @@ export function usePagedList<T>(
 
   const applyPage = useCallback(
     (pageNum: number, result: PagedResult<T>, append: boolean) => {
+      const getKey = getKeyRef.current;
       const content = result.content ?? [];
       const te = result.totalElements ?? 0;
       let tp = result.totalPages ?? 0;
@@ -79,7 +83,7 @@ export function usePagedList<T>(
       hasMoreRef.current = more;
       setHasMore(more);
     },
-    [getKey, pageSize],
+    [pageSize],
   );
 
   // Khi fetchFn thay đổi (deps thay đổi) hoặc enabled bật: reset về trang 0 và fetch lại

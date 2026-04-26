@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { ProductColor, ProductVariantSize } from "@/types/product";
 
@@ -11,11 +11,25 @@ export type SizeOption = {
   stockQuantity: number;
 };
 
+/**
+ * Quản lý lựa chọn màu / size cho trang chi tiết sản phẩm.
+ *
+ * mappedColors thường được tính bằng useMemo trong caller, nhưng khi deps thay đổi
+ * reference mà nội dung giống nhau, effect vẫn chạy. Dùng ref để lưu ID sản phẩm
+ * trước đó làm guard thay vì phụ thuộc vào reference của mảng.
+ */
 export function useProductVariantSelection(mappedColors: ProductColor[]) {
   const [activeColor, setActiveColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
 
+  /** Stable key để phát hiện "danh sách màu thực sự thay đổi" (sản phẩm khác). */
+  const colorsKeyRef = useRef<string>("");
+  const colorsKey = mappedColors.map((c) => c.label).join(",");
+
   useEffect(() => {
+    if (colorsKey === colorsKeyRef.current) return;
+    colorsKeyRef.current = colorsKey;
+
     if (mappedColors.length === 0) {
       setActiveColor("");
       return;
@@ -24,7 +38,7 @@ export function useProductVariantSelection(mappedColors: ProductColor[]) {
       if (prev && mappedColors.some((c) => c.label === prev)) return prev;
       return mappedColors[0].label;
     });
-  }, [mappedColors]);
+  }, [colorsKey, mappedColors]);
 
   const sizesForCurrentColor: SizeOption[] = useMemo(() => {
     const selected = mappedColors.find((c) => c.label === activeColor);
@@ -44,11 +58,10 @@ export function useProductVariantSelection(mappedColors: ProductColor[]) {
       setSelectedSize("");
       return;
     }
-    const first = sizesForCurrentColor[0];
     setSelectedSize((prev) => {
       const stillValid = sizesForCurrentColor.some((s) => s.value === prev);
       if (stillValid) return prev;
-      return first.value;
+      return sizesForCurrentColor[0].value;
     });
   }, [sizesForCurrentColor]);
 

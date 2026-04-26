@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useAppColors } from "@/hooks/use-app-colors";
 import { getCategoriesByParentId } from "@/services/categoryService";
@@ -18,12 +18,104 @@ type Props = {
   onSeeAll?: () => void;
 };
 
-export function CategorySection({
+const SKELETON_TABS = [0, 1, 2, 3] as const;
+const SKELETON_CHILDREN = [0, 1, 2, 3, 4, 5] as const;
+
+const RIPPLE_DEFAULT = { color: "rgba(0,0,0,0.06)" };
+const RIPPLE_BORDERLESS = { color: "rgba(0,0,0,0.06)", borderless: true };
+
+type RootTabProps = {
+  item: CategoryItem;
+  isActive: boolean;
+  onPress: (id: number) => void;
+  activeColor: string;
+  inactiveColor: string;
+  textColor: string;
+};
+
+const RootTab = memo(function RootTab({
+  item,
+  isActive,
+  onPress,
+  activeColor,
+  inactiveColor,
+  textColor,
+}: RootTabProps) {
+  const handlePress = useCallback(() => onPress(item.id), [onPress, item.id]);
+  return (
+    <Pressable
+      onPress={handlePress}
+      style={[
+        styles.rootTab,
+        { backgroundColor: isActive ? activeColor : inactiveColor },
+      ]}
+      android_ripple={RIPPLE_DEFAULT}
+    >
+      <Text
+        numberOfLines={1}
+        style={[styles.rootTabText, { color: isActive ? "#fff" : textColor }]}
+      >
+        {item.name}
+      </Text>
+    </Pressable>
+  );
+});
+
+type ChildCategoryItemProps = {
+  item: CategoryItem;
+  onPress: (slug: string, name: string) => void;
+  surfaceColor: string;
+  textColor: string;
+  mutedTextColor: string;
+};
+
+const ChildCategoryItem = memo(function ChildCategoryItem({
+  item,
+  onPress,
+  surfaceColor,
+  textColor,
+  mutedTextColor,
+}: ChildCategoryItemProps) {
+  const imageUrl = resolveAssetUrl(item.imageUrl) ?? item.imageUrl ?? null;
+  const handlePress = useCallback(
+    () => onPress(item.slug, item.name),
+    [onPress, item.slug, item.name],
+  );
+  return (
+    <Pressable
+      onPress={handlePress}
+      style={styles.childItem}
+      android_ripple={RIPPLE_BORDERLESS}
+    >
+      <View style={[styles.childImageWrap, { backgroundColor: surfaceColor }]}>
+        {imageUrl ? (
+          <Image
+            source={{ uri: imageUrl }}
+            style={styles.childImage}
+            contentFit="cover"
+            transition={200}
+          />
+        ) : (
+          <Text style={[styles.childInitial, { color: mutedTextColor }]}>
+            {item.name?.trim()?.slice(0, 1)?.toUpperCase() ?? "•"}
+          </Text>
+        )}
+      </View>
+      <Text
+        numberOfLines={2}
+        style={[styles.childName, { color: textColor }]}
+      >
+        {item.name}
+      </Text>
+    </Pressable>
+  );
+});
+
+function CategorySectionInner({
   title,
   subtitle,
   categories,
   loading = false,
-  onSeeAll,
 }: Props) {
   const colors = useAppColors();
   const router = useRouter();
@@ -45,153 +137,104 @@ export function CategorySection({
     queryKey: ["categories", "children", activeRootId],
     queryFn: () => getCategoriesByParentId(activeRootId!),
     enabled: activeRootId != null,
+    staleTime: 5 * 60_000,
   });
 
   const children = childrenQ.data ?? [];
-  const childrenLoading = childrenQ.isPending;
+
+  const handleRootPress = useCallback((id: number) => setActiveRootId(id), []);
+
+  const handleChildPress = useCallback(
+    (slug: string, name: string) => {
+      useShopNavStore.getState().setPending({ categorySlug: slug, categoryName: name });
+      router.push("/(tabs)/shop" as any);
+    },
+    [router],
+  );
 
   if (!loading && roots.length === 0) return null;
 
   return (
-    <View className="px-4 pb-4 pt-2">
-      <View className="mb-2 flex-row items-end justify-between">
-        <View>
-          <Text
-            className="text-[15px] font-semibold"
-            style={{ color: colors.text }}
-          >
-            {title}
-          </Text>
-          {subtitle ? (
-            <Text
-              className="mt-0.5 text-[11px]"
-              style={{ color: colors.mutedText }}
-            >
-              {subtitle}
-            </Text>
-          ) : null}
-        </View>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+        {subtitle ? (
+          <Text style={[styles.subtitle, { color: colors.mutedText }]}>{subtitle}</Text>
+        ) : null}
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        className="mb-3"
-      >
-        {loading && roots.length === 0 ? (
-          <>
-            {Array.from({ length: 4 }).map((_, i) => (
-              <View
-                key={i}
-                className="mr-2 h-8 w-20 rounded-full"
-                style={{ backgroundColor: colors.surfaceMuted }}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.rootScroll}>
+        {loading && roots.length === 0
+          ? SKELETON_TABS.map((k) => (
+              <View key={k} style={[styles.rootTabSkeleton, { backgroundColor: colors.surfaceMuted }]} />
+            ))
+          : roots.map((r) => (
+              <RootTab
+                key={r.id}
+                item={r}
+                isActive={r.id === activeRootId}
+                onPress={handleRootPress}
+                activeColor={colors.tint}
+                inactiveColor={colors.surfaceMuted}
+                textColor={colors.text}
               />
             ))}
-          </>
-        ) : (
-          roots.map((r) => {
-            const isActive = r.id === activeRootId;
-            return (
-              <Pressable
-                key={r.id}
-                onPress={() => setActiveRootId(r.id)}
-                className="mr-2 h-8 items-center justify-center rounded-full px-4"
-                style={{
-                  backgroundColor: isActive ? colors.tint : colors.surfaceMuted,
-                }}
-                android_ripple={{ color: "rgba(0,0,0,0.06)" }}
-              >
-                <Text
-                  numberOfLines={1}
-                  className="text-[12px] font-semibold"
-                  style={{ color: isActive ? "#fff" : colors.text }}
-                >
-                  {r.name}
-                </Text>
-              </Pressable>
-            );
-          })
-        )}
       </ScrollView>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {loading || childrenLoading ? (
-          <>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <View key={i} className="mr-3" style={{ width: 72 }}>
-                <View
-                  className="rounded-full"
-                  style={{
-                    width: 64,
-                    height: 64,
-                    backgroundColor: colors.surfaceMuted,
-                    marginBottom: 8,
-                  }}
-                />
-                <View
-                  className="h-3 w-16 rounded"
-                  style={{ backgroundColor: colors.surfaceMuted }}
-                />
+        {loading || childrenQ.isPending
+          ? SKELETON_CHILDREN.map((k) => (
+              <View key={k} style={styles.childSkeletonWrap}>
+                <View style={[styles.childSkeletonCircle, { backgroundColor: colors.surfaceMuted }]} />
+                <View style={[styles.childSkeletonText, { backgroundColor: colors.surfaceMuted }]} />
               </View>
-            ))}
-          </>
-        ) : (
-          children.map((c) => {
-            const resolved = resolveAssetUrl(c.imageUrl);
-            const finalUrl = resolved ?? c.imageUrl ?? null;
-
-            return (
-              <Pressable
+            ))
+          : children.map((c) => (
+              <ChildCategoryItem
                 key={c.id}
-                onPress={() => {
-                  useShopNavStore.getState().setPending({
-                    categorySlug: c.slug,
-                    categoryName: c.name,
-                  });
-                  router.push("/(tabs)/shop" as any);
-                }}
-                className="mr-3 items-center"
-                style={{ width: 72 }}
-                android_ripple={{ color: "rgba(0,0,0,0.06)", borderless: true }}
-              >
-                <View
-                  className="items-center justify-center rounded-full"
-                  style={{
-                    width: 64,
-                    height: 64,
-                    backgroundColor: colors.surfaceMuted,
-                    overflow: "hidden",
-                  }}
-                >
-                  {finalUrl ? (
-                    <Image
-                      source={{ uri: finalUrl }}
-                      style={{ width: 64, height: 64 }}
-                      contentFit="cover"
-                      transition={200}
-                    />
-                  ) : (
-                    <Text
-                      className="text-[16px] font-semibold"
-                      style={{ color: colors.mutedText }}
-                    >
-                      {c.name?.trim()?.slice(0, 1)?.toUpperCase() ?? "•"}
-                    </Text>
-                  )}
-                </View>
-
-                <Text
-                  numberOfLines={2}
-                  className="mt-2 text-center text-[11px] font-medium"
-                  style={{ color: colors.text, lineHeight: 14 }}
-                >
-                  {c.name}
-                </Text>
-              </Pressable>
-            );
-          })
-        )}
+                item={c}
+                onPress={handleChildPress}
+                surfaceColor={colors.surfaceMuted}
+                textColor={colors.text}
+                mutedTextColor={colors.mutedText}
+              />
+            ))}
       </ScrollView>
     </View>
   );
 }
+
+export const CategorySection = memo(CategorySectionInner);
+
+const styles = StyleSheet.create({
+  container: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 8 },
+  header: { marginBottom: 8 },
+  title: { fontSize: 15, fontWeight: "600" },
+  subtitle: { marginTop: 2, fontSize: 11 },
+  rootScroll: { marginBottom: 12 },
+  rootTab: {
+    marginRight: 8,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 999,
+    paddingHorizontal: 16,
+  },
+  rootTabText: { fontSize: 12, fontWeight: "600" },
+  rootTabSkeleton: { marginRight: 8, height: 32, width: 80, borderRadius: 999 },
+  childItem: { marginRight: 12, alignItems: "center", width: 72 },
+  childImageWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  childImage: { width: 64, height: 64 },
+  childInitial: { fontSize: 16, fontWeight: "600" },
+  childName: { marginTop: 8, textAlign: "center", fontSize: 11, fontWeight: "500", lineHeight: 14 },
+  childSkeletonWrap: { marginRight: 12, width: 72 },
+  childSkeletonCircle: { width: 64, height: 64, borderRadius: 32, marginBottom: 8 },
+  childSkeletonText: { height: 12, width: 64, borderRadius: 4 },
+});

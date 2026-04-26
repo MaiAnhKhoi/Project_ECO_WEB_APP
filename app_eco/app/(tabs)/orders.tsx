@@ -2,7 +2,7 @@ import "@/global.css";
 import * as Haptics from "expo-haptics";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { Alert, FlatList, RefreshControl, View } from "react-native";
 
 import { AppScreenShell } from "@/components/layout";
@@ -39,22 +39,8 @@ export default function OrdersScreen() {
   const navigation = useNavigation();
   const token = useAuthStore((s) => s.accessToken);
   const user = useAuthStore((s) => s.user);
+  const bootstrapping = useAuthStore((s) => s.bootstrapping);
   const orderTabCounts = useOrderAttentionStore((s) => s.orderTabCounts);
-  const redirectedRef = useRef(false);
-
-  // ── Auth guard ──
-  useEffect(() => {
-    if (!user) {
-      if (redirectedRef.current) return;
-      redirectedRef.current = true;
-      navLockRun(() =>
-        router.push({
-          pathname: "/auth/login",
-          params: { next: "/(tabs)/orders" },
-        } as any),
-      );
-    }
-  }, [user, router]);
 
   const [activeTab, setActiveTab] = useState<OrderTabKey>("all");
   const [cancelTarget, setCancelTarget] = useState<OrderSummary | null>(null);
@@ -231,9 +217,48 @@ export default function OrdersScreen() {
     [token],
   );
 
-  if (!user) return null;
-
   const subtitle = !initialLoading && totalElements > 0 ? `${totalElements} đơn hàng` : undefined;
+
+  if (!user) {
+    return (
+      <AppScreenShell
+        header={
+          <SimpleScreenHeader
+            title="Đơn hàng của tôi"
+            onBack={handleBack}
+          />
+        }
+      >
+        {bootstrapping ? (
+          <View className="flex-1">
+            <LoadingSpinner
+              visible
+              fullscreen={false}
+              message="Đang kiểm tra phiên đăng nhập…"
+              style={{ flex: 1, justifyContent: "center" }}
+            />
+          </View>
+        ) : (
+          <EmptyStateBlock
+            iconName="package"
+            sectionLabel="Đơn hàng"
+            title="Đăng nhập để xem đơn hàng"
+            description="Theo dõi trạng thái giao hàng và lịch sử mua sắm của bạn sau khi đăng nhập."
+            action={{
+              label: "Đăng nhập",
+              onPress: () =>
+                navLockRun(() =>
+                  router.push({
+                    pathname: "/auth/login",
+                    params: { next: "/(tabs)/orders" },
+                  } as any),
+                ),
+            }}
+          />
+        )}
+      </AppScreenShell>
+    );
+  }
 
   return (
     <AppScreenShell

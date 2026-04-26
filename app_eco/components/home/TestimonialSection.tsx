@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import React, { memo, useState } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppIcon } from "@/components/ui/AppIcon";
 import { useAppColors } from "@/hooks/use-app-colors";
@@ -14,117 +14,72 @@ type Props = {
   loading?: boolean;
 };
 
-function TestimonialCard({ item }: { item: Testimonial }) {
+/** 5-star array reused across all cards — avoids Array.from on every render. */
+const FIVE_STARS = [0, 1, 2, 3, 4] as const;
+
+const SKELETON_KEYS = [0, 1] as const;
+
+function TestimonialCardInner({ item }: { item: Testimonial }) {
   const colors = useAppColors();
   const [imageFailed, setImageFailed] = useState(false);
-  const loggedRef = useRef(false);
 
-  const resolved = useMemo(() => resolveAssetUrl(item.image), [item.image]);
-  const imageUrl = resolved ?? (item.image ?? null);
-  const willProxy = false;
-  const proxiedImageUrl = imageUrl;
+  const imageUrl = resolveAssetUrl(item.image) ?? item.image ?? null;
   const showImage = Boolean(imageUrl) && !imageFailed;
   const initial = item.name?.trim()?.slice(0, 1)?.toUpperCase() ?? "•";
 
-  useEffect(() => {
-    if (!__DEV__ || loggedRef.current) return;
-    loggedRef.current = true;
-    console.log({
-      tag: "testimonial_image_debug",
-      name: item.name,
-      product: item.product,
-      rawImage: item.image,
-      resolvedImageUrl: imageUrl,
-      willProxy,
-      finalImageUrl: proxiedImageUrl,
-    });
-  }, [imageUrl, proxiedImageUrl, willProxy, item.image, item.name, item.product]);
-
   return (
-    <View className="mr-3 w-72 rounded-2xl p-4" style={{ backgroundColor: colors.surfaceMuted }}>
-      <View className="flex-row items-start justify-between">
-        <View className="flex-1 pr-2">
-          <Text className="text-[12px] font-semibold" style={{ color: colors.text }}>
-            {item.name}
-          </Text>
-          <View className="mt-0.5 flex-row items-center">
+    <View style={[styles.card, { backgroundColor: colors.surfaceMuted }]}>
+      <View style={styles.cardHeader}>
+        <View style={styles.cardNameWrap}>
+          <Text style={[styles.cardName, { color: colors.text }]}>{item.name}</Text>
+          <View style={styles.verifiedRow}>
             <AppIcon name="check-circle" size={12} color={colors.tint} />
-            <Text className="ml-1 text-[10px]" style={{ color: colors.mutedText }}>
+            <Text style={[styles.verifiedText, { color: colors.mutedText }]}>
               Người mua đã xác minh
             </Text>
           </View>
         </View>
 
-        <View className="flex-row items-center">
-          {Array.from({ length: 5 }).map((_, i) => (
+        <View style={styles.starsRow}>
+          {FIVE_STARS.map((i) => (
             <AppIcon key={i} name="star" size={14} color="#F59E0B" />
           ))}
         </View>
       </View>
 
       <Text
-        className="mt-2 text-[12px]"
-        style={{ color: colors.mutedText }}
+        style={[styles.reviewText, { color: colors.mutedText }]}
         numberOfLines={4}
       >
         {item.review}
       </Text>
 
-      <View
-        className="mt-3 flex-row items-center"
-        style={{
-          borderTopWidth: 1,
-          borderTopColor: "rgba(0,0,0,0.06)",
-          paddingTop: 12,
-        }}
-      >
+      <View style={[styles.productRow, { borderTopColor: "rgba(0,0,0,0.06)" }]}>
         <View
-          className="items-center justify-center rounded-xl"
-          style={{
-            width: 56,
-            height: 56,
-            backgroundColor: "rgba(0,0,0,0.06)",
-            overflow: "hidden",
-            marginRight: 10,
-          }}
+          style={[styles.productImage, { backgroundColor: "rgba(0,0,0,0.06)" }]}
         >
           {showImage ? (
             <Image
-              source={{ uri: proxiedImageUrl! }}
-              style={{ width: 56, height: 56 }}
+              source={{ uri: imageUrl! }}
+              style={styles.productImageInner}
               contentFit="cover"
               transition={200}
-              onError={(e) => {
-                if (__DEV__) {
-                  console.log({
-                    tag: "testimonial_image_error",
-                    name: item.name,
-                    product: item.product,
-                    rawImage: item.image,
-                    resolvedImageUrl: resolved,
-                    willProxy,
-                    finalImageUrl: proxiedImageUrl,
-                    error: (e as any)?.error ?? e,
-                  });
-                }
-                setImageFailed(true);
-              }}
+              onError={() => setImageFailed(true)}
             />
           ) : (
-            <Text className="text-[18px] font-semibold" style={{ color: colors.mutedText }}>
+            <Text style={[styles.productInitial, { color: colors.mutedText }]}>
               {initial}
             </Text>
           )}
         </View>
 
-        <View className="flex-1">
-          <Text className="text-[10px]" style={{ color: colors.mutedText }}>
+        <View style={styles.productInfo}>
+          <Text style={[styles.productLabel, { color: colors.mutedText }]}>
             Mặt hàng đã mua:
           </Text>
           <Text
             numberOfLines={1}
-            className="mt-0.5 text-[12px] font-semibold"
-            style={{ color: colors.text }}
+            style={[styles.productName, { color: colors.text }]}
           >
             {item.product || "—"}
           </Text>
@@ -134,7 +89,9 @@ function TestimonialCard({ item }: { item: Testimonial }) {
   );
 }
 
-export function TestimonialSection({
+const TestimonialCard = memo(TestimonialCardInner);
+
+function TestimonialSectionInner({
   title,
   subtitle,
   items,
@@ -144,38 +101,73 @@ export function TestimonialSection({
 
   if (!loading && items.length === 0) return null;
 
+  const displayItems = items
+    .filter((t) => Boolean(t?.review) && Boolean(t?.name))
+    .slice(0, 8);
+
   return (
-    <View className="px-4 pb-4 pt-2">
-      <View className="mb-2">
-        <Text className="text-[15px] font-semibold" style={{ color: colors.text }}>
-          {title}
-        </Text>
+    <View style={styles.container}>
+      <View style={styles.sectionHeader}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>{title}</Text>
         {subtitle ? (
-          <Text className="mt-0.5 text-[11px]" style={{ color: colors.mutedText }}>
+          <Text style={[styles.sectionSubtitle, { color: colors.mutedText }]}>
             {subtitle}
           </Text>
         ) : null}
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {loading && items.length === 0 ? (
-          <>
-            {Array.from({ length: 2 }).map((_, i) => (
+        {loading && items.length === 0
+          ? SKELETON_KEYS.map((k) => (
               <View
-                key={i}
-                className="mr-3 w-64 rounded-2xl p-4"
-                style={{ backgroundColor: colors.surfaceMuted, height: 120 }}
+                key={k}
+                style={[styles.skeleton, { backgroundColor: colors.surfaceMuted }]}
               />
+            ))
+          : displayItems.map((t, idx) => (
+              <TestimonialCard key={`${t.name ?? "t"}-${idx}`} item={t} />
             ))}
-          </>
-        ) : (
-          items
-            .filter((t) => Boolean(t?.review) && Boolean(t?.name))
-            .slice(0, 8)
-            .map((t, idx) => <TestimonialCard key={`${t.name ?? "t"}-${idx}`} item={t} />)
-        )}
       </ScrollView>
     </View>
   );
 }
 
+export const TestimonialSection = memo(TestimonialSectionInner);
+
+const styles = StyleSheet.create({
+  container: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 8 },
+  sectionHeader: { marginBottom: 8 },
+  sectionTitle: { fontSize: 15, fontWeight: "600" },
+  sectionSubtitle: { marginTop: 2, fontSize: 11 },
+  skeleton: { marginRight: 12, width: 256, height: 120, borderRadius: 16 },
+
+  card: { marginRight: 12, width: 288, borderRadius: 16, padding: 16 },
+  cardHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" },
+  cardNameWrap: { flex: 1, paddingRight: 8 },
+  cardName: { fontSize: 12, fontWeight: "600" },
+  verifiedRow: { marginTop: 2, flexDirection: "row", alignItems: "center" },
+  verifiedText: { marginLeft: 4, fontSize: 10 },
+  starsRow: { flexDirection: "row", alignItems: "center" },
+  reviewText: { marginTop: 8, fontSize: 12, lineHeight: 18 },
+  productRow: {
+    marginTop: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    borderTopWidth: 1,
+    paddingTop: 12,
+  },
+  productImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    overflow: "hidden",
+    marginRight: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  productImageInner: { width: 56, height: 56 },
+  productInitial: { fontSize: 18, fontWeight: "600" },
+  productInfo: { flex: 1 },
+  productLabel: { fontSize: 10 },
+  productName: { marginTop: 2, fontSize: 12, fontWeight: "600" },
+});

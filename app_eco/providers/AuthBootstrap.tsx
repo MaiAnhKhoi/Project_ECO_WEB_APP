@@ -1,15 +1,18 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useAuthStore } from "@/store/authStore";
 
 export function AuthBootstrap({ children }: { children: React.ReactNode }) {
   const bootstrapping = useAuthStore((s) => s.bootstrapping);
-  const bootstrap = useAuthStore((s) => s.bootstrap);
+  /** Lấy hàm qua getState() tránh đưa vào dep array → không gọi lại mỗi render. */
+  const calledRef = useRef(false);
 
   useEffect(() => {
-    bootstrap();
-  }, [bootstrap]);
+    if (calledRef.current) return;
+    calledRef.current = true;
+    useAuthStore.getState().bootstrap();
+  }, []);
 
   return (
     <>
@@ -22,4 +25,3 @@ export function AuthBootstrap({ children }: { children: React.ReactNode }) {
     </>
   );
 }
-

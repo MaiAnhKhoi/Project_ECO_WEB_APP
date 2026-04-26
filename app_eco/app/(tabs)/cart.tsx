@@ -2,8 +2,8 @@ import "@/global.css";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, FlatList, Pressable, Text, View } from "react-native";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, FlatList, ListRenderItem, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AppScreenShell } from "@/components/layout";
 import { CartEmptyState } from "@/components/cart/CartEmptyState";
@@ -23,6 +23,65 @@ import { variantOptionsFromProduct } from "@/utils/cartVariants";
 import { navLockRun } from "@/utils/navLock";
 
 const BTN_RADIUS = 16;
+
+const CONTENT_STYLE = {
+  paddingHorizontal: 16,
+  paddingTop: 10,
+  paddingBottom: 32,
+  gap: 12,
+} as const;
+
+const CLEAR_BTN_STYLE = {
+  paddingVertical: 10,
+  paddingHorizontal: 16,
+  borderRadius: BTN_RADIUS,
+} as const;
+
+const CLEAR_BTN_TITLE = { fontSize: 14, fontWeight: "600" as const };
+
+// ── Memoised CartItemRow — only re-renders when its own props change ──
+type CartItemRowProps = {
+  row: CartRow;
+  isMutating: boolean;
+  isSelected: boolean;
+  onIncrease: (row: CartRow) => void;
+  onDecrease: (row: CartRow) => void;
+  onRemove: (row: CartRow) => void;
+  onToggleCheckout: (rowKey: string) => void;
+  onSelectVariant: ((row: CartRow, opt: import("@/types/cart").CartVariantOption) => void) | null;
+  onPress: (productId: number) => void;
+};
+
+const CartItemRow = memo(function CartItemRow({
+  row,
+  isMutating,
+  isSelected,
+  onIncrease,
+  onDecrease,
+  onRemove,
+  onToggleCheckout,
+  onSelectVariant,
+  onPress,
+}: CartItemRowProps) {
+  const { rowKey, ...cardBase } = row;
+  const multi = Array.isArray(row.variantOptions) && row.variantOptions.length > 1;
+  return (
+    <View style={{ opacity: isMutating ? 0.55 : 1 }}>
+      <CartItemCard
+        {...cardBase}
+        selectedVariantId={row.variantId}
+        onSelectVariant={multi && onSelectVariant ? (opt) => onSelectVariant(row, opt) : undefined}
+        checkoutSelected={isSelected}
+        onToggleCheckout={() => onToggleCheckout(rowKey)}
+        disabled={isMutating}
+        onIncrease={() => onIncrease(row)}
+        onDecrease={() => onDecrease(row)}
+        onRemove={() => onRemove(row)}
+        onPress={() => onPress(row.productId)}
+      />
+    </View>
+  );
+});
 
 type CartRow = {
   rowKey: string;
@@ -72,6 +131,52 @@ function fromGuestItem(item: GuestCartItem, idx: number): CartRow {
     variantOptions: undefined,
   };
 }
+
+// ── Memoised header to prevent re-render when cart items change ──
+type CartListHeaderProps = {
+  allRowsSelected: boolean;
+  someRowsSelected: boolean;
+  colors: ReturnType<typeof useAppColors>;
+  onToggleSelectAll: () => void;
+  onClearAll: () => void;
+};
+
+const CartListHeader = memo(function CartListHeader({
+  allRowsSelected,
+  someRowsSelected,
+  colors,
+  onToggleSelectAll,
+  onClearAll,
+}: CartListHeaderProps) {
+  return (
+    <View className="mb-2 flex-row items-center justify-between pb-1">
+      <Pressable
+        onPress={onToggleSelectAll}
+        className="flex-row items-center gap-2.5 active:opacity-80"
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: allRowsSelected }}
+        accessibilityLabel={allRowsSelected ? "Bỏ chọn tất cả" : "Chọn tất cả sản phẩm"}
+      >
+        <CartRoundCheckbox
+          nonInteractive
+          checked={allRowsSelected}
+          indeterminate={someRowsSelected}
+        />
+        <Text className="text-[14px] font-medium" style={{ color: colors.text }}>
+          Chọn tất cả
+        </Text>
+      </Pressable>
+      <CustomButton
+        title="Xoá tất cả"
+        variant="secondary"
+        onPress={onClearAll}
+        titleStyle={CLEAR_BTN_TITLE}
+        style={CLEAR_BTN_STYLE}
+        accessibilityLabel="Xoá tất cả sản phẩm trong giỏ"
+      />
+    </View>
+  );
+});
 
 export default function CartScreen() {
   const router = useRouter();
@@ -368,6 +473,37 @@ export default function CartScreen() {
 
   const isLoading = isLoggedIn && !serverCart && !refreshing;
 
+  const handleNavigateToProduct = useCallback(
+    (productId: number) => router.push(`/product/${productId}` as any),
+    [router],
+  );
+
+  const renderItem: ListRenderItem<CartRow> = useCallback(
+    ({ item: row }) => (
+      <CartItemRow
+        row={row}
+        isMutating={mutatingId === row.rowKey}
+        isSelected={selectedKeys.has(row.rowKey)}
+        onIncrease={handleIncrease}
+        onDecrease={handleDecrease}
+        onRemove={handleRemove}
+        onToggleCheckout={toggleSelectRow}
+        onSelectVariant={handleVariantChange}
+        onPress={handleNavigateToProduct}
+      />
+    ),
+    [
+      mutatingId,
+      selectedKeys,
+      handleIncrease,
+      handleDecrease,
+      handleRemove,
+      toggleSelectRow,
+      handleVariantChange,
+      handleNavigateToProduct,
+    ],
+  );
+
   return (
     <AppScreenShell
       header={
@@ -388,75 +524,23 @@ export default function CartScreen() {
         <FlatList
             data={rows}
             keyExtractor={(r) => r.rowKey}
-            contentContainerStyle={{
-              paddingHorizontal: 16,
-              paddingTop: 10,
-              paddingBottom: 32,
-              gap: 12,
-            }}
+            contentContainerStyle={CONTENT_STYLE}
             showsVerticalScrollIndicator={false}
             refreshing={refreshing}
             onRefresh={isLoggedIn ? onRefresh : undefined}
+            initialNumToRender={6}
+            maxToRenderPerBatch={8}
+            windowSize={7}
             ListHeaderComponent={
-              <View className="mb-2 flex-row items-center justify-between pb-1">
-                <Pressable
-                  onPress={toggleSelectAll}
-                  className="flex-row items-center gap-2.5 active:opacity-80"
-                  accessibilityRole="checkbox"
-                  accessibilityState={{
-                    checked: allRowsSelected,
-                  }}
-                  accessibilityLabel={
-                    allRowsSelected ? "Bỏ chọn tất cả" : "Chọn tất cả sản phẩm"
-                  }
-                >
-                  <CartRoundCheckbox
-                    nonInteractive
-                    checked={allRowsSelected}
-                    indeterminate={someRowsSelected}
-                  />
-                  <Text
-                    className="text-[14px] font-medium"
-                    style={{ color: colors.text }}
-                  >
-                    Chọn tất cả
-                  </Text>
-                </Pressable>
-                <CustomButton
-                  title="Xoá tất cả"
-                  variant="secondary"
-                  onPress={handleClearAll}
-                  titleStyle={{ fontSize: 14, fontWeight: "600" }}
-                  style={{
-                    paddingVertical: 10,
-                    paddingHorizontal: 16,
-                    borderRadius: BTN_RADIUS,
-                  }}
-                  accessibilityLabel="Xoá tất cả sản phẩm trong giỏ"
-                />
-              </View>
+              <CartListHeader
+                allRowsSelected={allRowsSelected}
+                someRowsSelected={someRowsSelected}
+                colors={colors}
+                onToggleSelectAll={toggleSelectAll}
+                onClearAll={handleClearAll}
+              />
             }
-            renderItem={({ item: row }) => {
-              const { rowKey, ...cardBase } = row;
-              const multi =
-                Array.isArray(row.variantOptions) && row.variantOptions.length > 1;
-              return (
-                <View style={{ opacity: mutatingId === rowKey ? 0.55 : 1 }}>
-                  <CartItemCard
-                    {...cardBase}
-                    selectedVariantId={row.variantId}
-                    onSelectVariant={multi ? (opt) => handleVariantChange(row, opt) : undefined}
-                    checkoutSelected={selectedKeys.has(rowKey)}
-                    onToggleCheckout={() => toggleSelectRow(rowKey)}
-                    disabled={mutatingId === rowKey}
-                    onIncrease={() => handleIncrease(row)}
-                    onDecrease={() => handleDecrease(row)}
-                    onRemove={() => handleRemove(row)}
-                    onPress={() => router.push(`/product/${row.productId}` as any)}
-                  />
-                </View>
-              );
-            }}
+            renderItem={renderItem}
             ListFooterComponent={
               <CartOrderSummary
                 subtotal={selectedSubtotal}

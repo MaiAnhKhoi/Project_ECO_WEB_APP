@@ -145,7 +145,9 @@ export function HomeBannerCarousel({ items }: Props) {
       <FlatList
         ref={listRef}
         data={items}
-        keyExtractor={(_, i) => `banner-${i}`}
+        keyExtractor={(item, i) =>
+          item.imageSrc ? `banner-${i}-${item.imageSrc}` : `banner-${i}`
+        }
         renderItem={renderItem}
         horizontal
         pagingEnabled
@@ -153,7 +155,11 @@ export function HomeBannerCarousel({ items }: Props) {
         decelerationRate="fast"
         style={{ width: winW }}
         onScroll={onScroll}
-        scrollEventThrottle={16}
+        scrollEventThrottle={32}
+        removeClippedSubviews
+        initialNumToRender={1}
+        maxToRenderPerBatch={2}
+        windowSize={3}
         getItemLayout={(_, i) => ({
           length: winW,
           offset: winW * i,

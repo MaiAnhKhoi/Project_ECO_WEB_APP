@@ -1,6 +1,6 @@
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import React, { useEffect } from "react";
-import { Pressable, Text, View } from "react-native";
+import React, { memo, useCallback, useEffect, useRef } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -24,11 +24,60 @@ const TAB_META: Record<
   cart: { label: "Giỏ hàng", iconName: "cart.fill" },
 };
 
-export default function Footer({
-  state,
-  descriptors,
-  navigation,
-}: BottomTabBarProps) {
+type TabButtonProps = {
+  tabKey: TabKey;
+  isFocused: boolean;
+  badge: number | string | undefined;
+  color: string;
+  label: string;
+  iconName: React.ComponentProps<typeof IconSymbol>["name"];
+  onPress: () => void;
+  onLongPress: () => void;
+};
+
+const TabButton = memo(function TabButton({
+  tabKey,
+  isFocused,
+  badge,
+  color,
+  label,
+  iconName,
+  onPress,
+  onLongPress,
+}: TabButtonProps) {
+  const numericBadge = typeof badge === "number" ? badge : typeof badge === "string" ? Number(badge) : 0;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={isFocused ? { selected: true } : {}}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      style={styles.tabButton}
+    >
+      <View style={styles.iconWrap}>
+        <IconSymbol size={22} name={iconName} color={color} />
+        {numericBadge > 0 ? (
+          <View
+            style={[
+              styles.badge,
+              { paddingHorizontal: numericBadge > 9 ? 4 : 0 },
+              tabKey === "orders" ? styles.badgeOrders : styles.badgeDefault,
+            ]}
+          >
+            <Text style={styles.badgeText}>
+              {numericBadge > 99 ? "99+" : numericBadge}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+      <Text style={[styles.label, { color, fontWeight: isFocused ? "600" : "400" }]}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+});
+
+export default function Footer({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const colors = useAppColors();
   const token = useAuthStore((s) => s.accessToken);
@@ -37,23 +86,28 @@ export default function Footer({
   const cartCount = useCartStore((s) => s.totalCount(isLoggedIn));
   const payosPendingCount = useOrderAttentionStore((s) => s.payosPendingCount);
 
+  /**
+   * Refresh order badges một lần khi login thay đổi, không phụ thuộc vào
+   * state.index để tránh gọi API mỗi khi user nhấn tab.
+   */
+  const prevLoggedInRef = useRef(isLoggedIn);
   useEffect(() => {
+    const changed = prevLoggedInRef.current !== isLoggedIn;
+    prevLoggedInRef.current = isLoggedIn;
     if (!isLoggedIn) {
       useOrderAttentionStore.getState().reset();
       return;
     }
-    const t = setTimeout(() => {
+    if (changed) {
       void refreshOrderAttentionBadges(token ?? null);
-    }, 400);
-    return () => clearTimeout(t);
-  }, [isLoggedIn, token, state.index]);
+    }
+  }, [isLoggedIn, token]);
 
   return (
     <View
-      className="border-t border-black/10 bg-white"
-      style={{ paddingBottom: Math.max(insets.bottom, 8) }}
+      style={[styles.container, { paddingBottom: Math.max(insets.bottom, 8) }]}
     >
-      <View className="flex-row items-center justify-around px-2 pt-2">
+      <View style={styles.row}>
         {state.routes.map((route, index) => {
           const isFocused = state.index === index;
           const key = route.name as TabKey;
@@ -61,7 +115,6 @@ export default function Footer({
           if (!meta) return null;
 
           const { options } = descriptors[route.key];
-          /** Tab Đơn hàng: badge đỏ = số đơn PayOS còn trong hạn thanh toán (theo canShowPayOSRetryPay) */
           const badge =
             key === "wishlist"
               ? wishlistCount
@@ -78,54 +131,51 @@ export default function Footer({
               target: route.key,
               canPreventDefault: true,
             });
-
             if (!isFocused && !event.defaultPrevented) {
               navigation.navigate(route.name);
             }
           };
 
           const onLongPress = () => {
-            navigation.emit({
-              type: "tabLongPress",
-              target: route.key,
-            });
+            navigation.emit({ type: "tabLongPress", target: route.key });
           };
 
           return (
-            <Pressable
+            <TabButton
               key={route.key}
-              accessibilityRole="button"
-              accessibilityState={isFocused ? { selected: true } : {}}
+              tabKey={key}
+              isFocused={isFocused}
+              badge={badge as number | string | undefined}
+              color={color}
+              label={meta.label}
+              iconName={meta.iconName}
               onPress={onPress}
               onLongPress={onLongPress}
-              className="flex-1 items-center justify-center py-2"
-            >
-              <View className="relative">
-                <IconSymbol size={22} name={meta.iconName} color={color} />
-                {typeof badge === "number" && badge > 0 ? (
-                  <View
-                    className={`absolute -right-2 -top-1 min-h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 ${
-                      key === "orders" ? "bg-red-600" : "bg-red-500"
-                    }`}
-                    style={{ paddingHorizontal: badge > 9 ? 4 : 0 }}
-                  >
-                    <Text className="text-[10px] font-semibold text-white">
-                      {badge > 99 ? "99+" : badge}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-
-              <Text
-                className="mt-1 text-[12px]"
-                style={{ color, fontWeight: isFocused ? "600" : "400" }}
-              >
-                {meta.label}
-              </Text>
-            </Pressable>
+            />
           );
         })}
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.1)", backgroundColor: "#fff" },
+  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-around", paddingHorizontal: 8, paddingTop: 8 },
+  tabButton: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 8 },
+  iconWrap: { position: "relative" },
+  badge: {
+    position: "absolute",
+    right: -8,
+    top: -4,
+    minWidth: 16,
+    minHeight: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 999,
+  },
+  badgeDefault: { backgroundColor: "#EF4444" },
+  badgeOrders: { backgroundColor: "#DC2626" },
+  badgeText: { fontSize: 10, fontWeight: "600", color: "#fff" },
+  label: { marginTop: 4, fontSize: 12 },
+});
