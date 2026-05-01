@@ -15,6 +15,7 @@ import {
 
 import Header from "@/components/header/Header";
 import HeaderAside from "@/components/header/HeaderAside";
+import { AIChatFab } from "@/components/ai/AIChatFab";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { AppProviders } from "@/providers/AppProviders";
 import { useAsideStore } from "@/store/asideStore";
@@ -63,6 +64,8 @@ function RootLayoutInner() {
     pathname?.startsWith("/about") ||
     pathname?.startsWith("/contact") ||
     pathname?.startsWith("/chat") ||
+    pathname?.startsWith("/ai-chat") ||
+    pathname?.startsWith("/ai-stylist") ||
     pathname?.startsWith("/search") ||
     pathname?.startsWith("/product") ||
     pathname?.startsWith("/compare") ||
@@ -109,7 +112,7 @@ function RootLayoutInner() {
             }}
           />
         ) : null}
-        <View className="flex-1">
+        <View className="flex-1" style={{ position: "relative" }} collapsable={false}>
           <Stack
             screenOptions={{
               headerShown: false,
@@ -125,6 +128,8 @@ function RootLayoutInner() {
             <Stack.Screen name="about" />
             <Stack.Screen name="contact" />
             <Stack.Screen name="chat" />
+            <Stack.Screen name="ai-chat" />
+            <Stack.Screen name="ai-stylist" />
             <Stack.Screen name="search" />
             <Stack.Screen name="product/[id]" />
             <Stack.Screen name="order/[id]" />
@@ -132,6 +137,7 @@ function RootLayoutInner() {
             <Stack.Screen name="order-success" />
             <Stack.Screen name="compare" />
           </Stack>
+          <AIChatFab />
         </View>
         {/* Luôn mount aside để có thể mở lại từ các màn fullscreen (profile/addresses) */}
         <HeaderAside />

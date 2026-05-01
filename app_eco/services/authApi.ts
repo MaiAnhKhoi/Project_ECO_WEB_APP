@@ -1,66 +1,34 @@
 import { httpClient } from "@/lib/httpClient";
-
-export type Role = {
-  id: number;
-  code: string;
-  name: string;
-};
-
-export type User = {
-  id: number;
-  name: string;
-  username?: string;
-  email: string;
-  emailVerified: boolean;
-  phone?: string;
-  phoneVerified?: boolean;
-  status?: string;
-  twoFactorEnabled?: boolean;
-  lastLoginAt?: string;
-  roles?: Role[];
-  avatarUrl?: string;
-};
-
-export type ApiResponse<T> = {
-  success: boolean;
-  message: string;
-  data: T;
-  timestamp?: number;
-};
-
-export type LoginResponse = ApiResponse<{
-  accessToken: string;
-  refreshToken?: string;
-  tokenType?: string;
-  expiresIn?: number;
-  user: User;
-}>;
-
-export type RegisterResponse = ApiResponse<User>;
+import type {
+  AuthApiResponse,
+  AuthLoginResponse,
+  AuthRegisterResponse,
+  User,
+} from "@/types/auth";
 
 export const authApi = {
   login: (payload: { email: string; password: string }) =>
-    httpClient.post<LoginResponse>("/auth/login", payload),
+    httpClient.post<AuthLoginResponse>("/auth/login", payload),
   register: (payload: {
     name: string;
     email: string;
     phone?: string;
     password: string;
     passwordConfirm: string;
-  }) => httpClient.post<RegisterResponse>("/auth/register", payload),
-  me: (token: string) => httpClient.get<ApiResponse<User>>("/auth/me", { token }),
+  }) => httpClient.post<AuthRegisterResponse>("/auth/register", payload),
+  me: (token: string) => httpClient.get<AuthApiResponse<User>>("/auth/me", { token }),
   verifyEmail: (payload: { email: string; code: string }) =>
-    httpClient.post<ApiResponse<unknown>>("/auth/verify-email", payload),
+    httpClient.post<AuthApiResponse<unknown>>("/auth/verify-email", payload),
   resendVerification: (payload: { email: string }) =>
-    httpClient.post<ApiResponse<unknown>>("/auth/resend-verification", payload),
+    httpClient.post<AuthApiResponse<unknown>>("/auth/resend-verification", payload),
   forgotPassword: (payload: { email: string }) =>
-    httpClient.post<ApiResponse<unknown>>("/auth/forgot-password", payload),
+    httpClient.post<AuthApiResponse<unknown>>("/auth/forgot-password", payload),
   resetPassword: (payload: {
     email: string;
     code: string;
     newPassword: string;
     newPasswordConfirm: string;
-  }) => httpClient.post<ApiResponse<unknown>>("/auth/reset-password", payload),
+  }) => httpClient.post<AuthApiResponse<unknown>>("/auth/reset-password", payload),
   changePassword: (
     token: string,
     payload: {
@@ -68,6 +36,5 @@ export const authApi = {
       newPassword: string;
       newPasswordConfirm: string;
     }
-  ) => httpClient.post<ApiResponse<unknown>>("/auth/change-password", payload, { token }),
+  ) => httpClient.post<AuthApiResponse<unknown>>("/auth/change-password", payload, { token }),
 };
-

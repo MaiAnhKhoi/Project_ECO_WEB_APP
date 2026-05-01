@@ -18,9 +18,8 @@ import { useAppColors } from "@/hooks/use-app-colors";
 import { navLockRun } from "@/utils/navLock";
 import { useAuthStore } from "@/store/authStore";
 import { userApi } from "@/services/userApi";
+import type { Gender } from "@/types/userProfile";
 import { updateProfileSchema } from "@/validations/profileSchemas";
-
-type Gender = "male" | "female" | "other";
 
 type FormValues = {
   name: string;

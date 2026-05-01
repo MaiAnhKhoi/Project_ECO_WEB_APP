@@ -16,7 +16,8 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useAppColors } from "@/hooks/use-app-colors";
 import { navLockRun } from "@/utils/navLock";
 import { useAuthStore } from "@/store/authStore";
-import { addressApi, type AddressRequest, type AddressResponse } from "@/services/addressApi";
+import { addressApi } from "@/services/addressApi";
+import type { AddressRequest, AddressResponse } from "@/types/address";
 import { addressSchema } from "@/validations/addressSchemas";
 
 type FormValues = yup.InferType<typeof addressSchema>;

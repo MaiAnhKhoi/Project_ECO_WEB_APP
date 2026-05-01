@@ -6,6 +6,7 @@ import {
   ProductSection,
   TestimonialSection,
 } from "@/components/home";
+import { AIExploreHomeSection } from "@/components/ai/AIExploreHomeSection";
 import "@/global.css";
 import React from "react";
 import { ScrollView } from "react-native";
@@ -15,11 +16,13 @@ import {
   useHomeMetaQuery,
   useHomeProductsQuery,
 } from "@/queries/homeQueries";
+import { useAITrendingQuery } from "@/queries/aiQueries";
 
 export default function HomeScreen() {
   const bannersQ = useHomeBannersQuery();
   const metaQ = useHomeMetaQuery();
   const productsQ = useHomeProductsQuery();
+  const trendingQ = useAITrendingQuery(10);
 
   const banners = bannersQ.data ?? [];
   const loadState =
@@ -36,6 +39,7 @@ export default function HomeScreen() {
   const bestSellers = productsQ.data?.bestSellers ?? [];
   const bestDeals = productsQ.data?.bestDeals ?? [];
   const popularProducts = productsQ.data?.popularProducts ?? [];
+  const aiTrending = trendingQ.data?.products ?? [];
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["left", "right", "bottom"]}>
@@ -66,6 +70,8 @@ export default function HomeScreen() {
           loading={metaLoading}
         />
 
+        <AIExploreHomeSection products={aiTrending} loading={trendingQ.isPending} />
+
         <ProductSection
           title="Sản phẩm mới"
           subtitle="Vừa cập nhật"
@@ -84,6 +90,7 @@ export default function HomeScreen() {
           products={bestSellers}
           loading={productsLoading}
         />
+
         <ProductSection
           title="Giá tốt nhất"
           subtitle="Tiết kiệm chi phí"

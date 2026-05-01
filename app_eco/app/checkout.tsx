@@ -23,7 +23,7 @@ import { CustomButton } from "@/components/ui/CustomButton";
 import { CustomIconButton } from "@/components/ui/CustomIconButton";
 import { useAppColors } from "@/hooks/use-app-colors";
 import { addressApi } from "@/services/addressApi";
-import type { AddressResponse } from "@/services/addressApi";
+import type { AddressResponse } from "@/types/address";
 import { couponApi } from "@/services/couponApi";
 import { orderApi } from "@/services/orderApi";
 import { refreshOrderAttentionBadges } from "@/services/orderAttentionBadge";

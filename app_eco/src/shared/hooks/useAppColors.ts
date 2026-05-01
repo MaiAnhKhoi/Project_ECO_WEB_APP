@@ -10,6 +10,8 @@ export function useAppColors() {
     text: c.text,
     background: c.background,
     tint: c.tint,
+    /** CTA / FAB / accent — đồng bộ `tint` (light & dark đều teal). */
+    brandAccent: c.tint,
     icon: c.icon,
     tabIconDefault: c.tabIconDefault,
     tabIconSelected: c.tabIconSelected,

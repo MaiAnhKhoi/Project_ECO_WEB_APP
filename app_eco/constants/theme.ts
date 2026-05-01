@@ -7,7 +7,11 @@ import { Platform } from 'react-native';
 
 /** Màu nhấn — giữ trùng `primary.DEFAULT` trong `tailwind.config.js` (NativeWind). */
 const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+/**
+ * Dark: dùng cùng teal thay vì trắng — trắng + chữ/icon trắng trên nút/badge
+ * (Mua ngay, tab chip, Compare…) khiến người dùng không thấy được.
+ */
+const tintColorDark = tintColorLight;
 
 export const Colors = {
   light: {

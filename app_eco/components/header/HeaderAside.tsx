@@ -38,6 +38,8 @@ const MENU_ITEMS: MenuEntry[] = [
   { label: "Đơn hàng của tôi", href: "/(tabs)/orders", icon: "package" },
   { label: "Thông báo", href: "/notifications", icon: "bell" },
   { label: "Đánh giá của tôi", href: "/my-reviews", icon: "star" },
+  { label: "Chat AI", href: "/ai-chat", icon: "message-circle" },
+  { label: "AI Stylist", href: "/ai-stylist", icon: "layers" },
   { label: "Blog", href: "/blog", icon: "book-open" },
   { label: "Giới thiệu", href: "/about", icon: "info" },
   { label: "Liên hệ", href: "/contact", icon: "phone" },

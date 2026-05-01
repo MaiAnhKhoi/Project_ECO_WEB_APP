@@ -32,3 +32,10 @@ export interface Testimonial {
   image?: string | null;
   delay?: string | null;
 }
+
+/** Bao bì GET `/reviews/*` (khớp multipart envelope) */
+export interface ReviewApiResponse<T> {
+  success?: boolean;
+  message?: string;
+  data: T;
+}

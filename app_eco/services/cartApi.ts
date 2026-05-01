@@ -1,7 +1,5 @@
 import { httpClient } from "@/lib/httpClient";
-import type { CartItem, CartResponse, CartVariantOption } from "@/types/cart";
-
-export type { CartItem, CartResponse, CartVariantOption };
+import type { CartResponse } from "@/types/cart";
 
 /**
  * BE (CartService): bắt buộc `variantId` hoặc `color` không rỗng (không null/blank).

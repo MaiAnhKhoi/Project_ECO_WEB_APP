@@ -1,20 +1,5 @@
 import { httpClient } from "@/lib/httpClient";
-
-export type AddressRequest = {
-  firstName: string;
-  lastName: string;
-  company?: string;
-  address1: string;
-  city: string;
-  region: string;
-  province?: string;
-  phone: string;
-  isDefault: boolean;
-};
-
-export type AddressResponse = AddressRequest & {
-  id: number;
-};
+import type { AddressRequest, AddressResponse } from "@/types/address";
 
 export const addressApi = {
   getMyAddresses: (token: string) => httpClient.get<AddressResponse[]>("/addresses", { token }),
@@ -29,4 +14,3 @@ export const addressApi = {
   getDefault: (token: string) =>
     httpClient.get<AddressResponse>("/addresses/default", { token }),
 };
-

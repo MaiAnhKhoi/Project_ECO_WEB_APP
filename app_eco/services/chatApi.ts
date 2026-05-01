@@ -1,54 +1,23 @@
 import { getApiBaseUrl } from "@/config/api";
 import { httpClient } from "@/lib/httpClient";
-
-export type MessageAttachment = {
-  id: number;
-  url: string;
-  mimeType?: string | null;
-  sizeBytes?: number | null;
-  width?: number | null;
-  height?: number | null;
-  altText?: string | null;
-};
-
-export type MessageDto = {
-  id: number;
-  threadId: number;
-  senderId: number;
-  senderName: string;
-  contentText?: string | null;
-  createdAt: string;
-  mine: boolean;
-  read: boolean;
-  attachments: MessageAttachment[];
-};
-
-export type PageResponse<T> = {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-};
-
-export type ApiResponse<T> = {
-  data: T;
-  message?: string;
-  success?: boolean;
-};
+import type {
+  CustomerChatApiResponse,
+  CustomerChatPage,
+  MessageDto,
+} from "@/types/customerChat";
 
 export const chatApi = {
   getOrCreateMyThread: (token: string) =>
-    httpClient.get<ApiResponse<number>>("/customer/chat/thread", { token }),
+    httpClient.get<CustomerChatApiResponse<number>>("/customer/chat/thread", { token }),
 
   getMyMessages: (token: string, page = 0, size = 50) =>
-    httpClient.get<ApiResponse<PageResponse<MessageDto>>>(
+    httpClient.get<CustomerChatApiResponse<CustomerChatPage<MessageDto>>>(
       `/customer/chat/messages?page=${page}&size=${size}`,
       { token }
     ),
 
   markAllAsRead: (token: string) =>
-    httpClient.post<ApiResponse<void>>("/customer/chat/read-all", undefined, {
+    httpClient.post<CustomerChatApiResponse<void>>("/customer/chat/read-all", undefined, {
       token,
     }),
 
@@ -77,8 +46,7 @@ export const chatApi = {
         const body = await res.text();
         throw new Error(`API ${res.status}: ${body || res.statusText}`);
       }
-      return (await res.json()) as ApiResponse<MessageDto>;
+      return (await res.json()) as CustomerChatApiResponse<MessageDto>;
     });
   },
 };
-

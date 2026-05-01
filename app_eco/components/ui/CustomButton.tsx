@@ -42,7 +42,7 @@ export function CustomButton({
   const colors = useAppColors();
   const isPrimary = variant === "primary";
 
-  const bg = isPrimary ? colors.tint : colors.surfaceMuted;
+  const bg = isPrimary ? colors.brandAccent : colors.surfaceMuted;
   const fg = titleColor ?? (isPrimary ? "#FFFFFF" : colors.text);
 
   const hasComplexLayout = Boolean(subtitle || leftIcon || rightIcon);

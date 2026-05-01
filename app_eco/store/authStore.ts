@@ -2,7 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { authApi, type User } from "@/services/authApi";
+import { authApi } from "@/services/authApi";
+import type { User } from "@/types/auth";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { useCartStore } from "@/store/cartStore";
 import { wishlistApi } from "@/services/wishlistApi";

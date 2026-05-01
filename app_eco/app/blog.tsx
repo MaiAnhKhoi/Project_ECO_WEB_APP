@@ -13,7 +13,8 @@ import { CustomIconButton } from "@/components/ui/CustomIconButton";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useAppColors } from "@/hooks/use-app-colors";
 import { useAsideStore } from "@/store/asideStore";
-import { blogApi, type BlogResponse } from "@/services/blogApi";
+import { blogApi } from "@/services/blogApi";
+import type { BlogResponse } from "@/types/blog";
 import { navLockRun } from "@/utils/navLock";
 
 function stripHtml(input: string) {

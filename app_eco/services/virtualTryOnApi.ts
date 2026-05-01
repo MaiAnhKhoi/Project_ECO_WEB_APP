@@ -1,13 +1,6 @@
 import { getApiBaseUrl } from "@/config/api";
 import type { TryOnHistoryItem, TryOnRequest } from "@/types/virtualTryOn";
 
-type ApiEnvelope<T> = {
-  success?: boolean;
-  message?: string;
-  data?: T;
-  error?: string;
-};
-
 const TEN_MIN_MS = 600_000;
 
 function buildUrl(path: string): string {

@@ -14,7 +14,8 @@ import { EmptyStateBlock } from "@/components/ui/EmptyStateBlock";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useAppColors } from "@/hooks/use-app-colors";
 import { useAsideStore } from "@/store/asideStore";
-import { addressApi, type AddressResponse } from "@/services/addressApi";
+import { addressApi } from "@/services/addressApi";
+import type { AddressResponse } from "@/types/address";
 import { useAuthStore } from "@/store/authStore";
 import { navLockRun } from "@/utils/navLock";
 
