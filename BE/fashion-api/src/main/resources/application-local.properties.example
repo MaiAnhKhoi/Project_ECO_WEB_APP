@@ -1,34 +1,72 @@
-# Sao chep file nay thanh: application-local.properties
-# (application-local.properties da duoc .gitignore — khong push len Git).
+# Sao chép file này thành: application-local.properties
+# (application-local.properties đã được .gitignore — không push lên Git).
 #
-# Chay Spring Boot voi profile local, vi du:
+# File application-local.properties cũng được nạp tự động qua spring.config.import
+# ở CUỐI application.properties — KHÔNG cần bật profile "local" nếu bạn chỉ cần key OpenAI/PayOS v.v.
+#
+# Chạy Spring Boot với profile local, ví dụ:
 #   mvn spring-boot:run -Dspring-boot.run.profiles=local
-# Hoac IntelliJ: Active profiles = local
-# Hoac PowerShell: $env:SPRING_PROFILES_ACTIVE = "local"
+# Hoặc IntelliJ: Active profiles = local
+# Hoặc PowerShell: $env:SPRING_PROFILES_ACTIVE = "local"
 
+# --- Cache: không bắt buộc Redis trên máy dev ---
+# spring.cache.type=simple
+# spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+# Khi đã cài Redis và muốn dùng như production: xóa 2 dòng trên, hoặc CACHE_TYPE=redis
+
+# --- Gửi mail (SMTP) ---
 # spring.mail.username=
 # spring.mail.password=
 
-# jwt.secret=chuoi-du-dai-toi-thieu-256-bit-cho-hs512
+# --- JWT (bắt buộc cho đăng nhập; dùng chuỗi dài / ngẫu nhiên, tối thiểu ~256 bit cho HS512) ---
+# jwt.secret=
 
+# --- PayOS ---
 # payos.client-id=
 # payos.api-key=
 # payos.checksum-key=
 # payos.return-url=http://localhost:3000/payment/payos/callback
 # payos.cancel-url=http://localhost:3000/payment/payos/cancel
 
+# --- SePay ---
 # sepay.api-token=
 # sepay.bank-account-number=
 # sepay.base-url=https://my.sepay.vn
 
+# --- Cloudinary ---
 # app.storage.cloudinary.cloud-name=
 # app.storage.cloudinary.api-key=
 # app.storage.cloudinary.api-secret=
 # app.storage.cloudinary.folder=fashion-products
 # app.storage.cloudinary.upload-preset=
 
+# --- Replicate (virtual try-on / face match) ---
 # replicate.api.token=
+# Tùy chọn (mặc định đã có trong application.properties):
+# replicate.vton-path=/predictions
+# replicate.idm-version=
+# replicate.face-match-version=
 
-# Tuy chon: DB / Redis neu khac mac dinh trong application.properties
+# --- AI: OpenAI + Gemini (CompositeAIProvider tự fallback OpenAI → Gemini) ---
+#
+# [OpenAI] Lấy key tại: https://platform.openai.com/api-keys (trả phí)
+# CÁCH AN TOÀN NHẤT: đặt biến môi trường OPENAI_API_KEY, KHÔNG ghi key vào file
+# Trên Windows PowerShell:  $env:OPENAI_API_KEY = "sk-proj-..."
+# Trên Linux/Mac:           export OPENAI_API_KEY=sk-proj-...
+# Hoặc ghi thẳng vào file này (file đã bị .gitignore):
+# ai.openai.api-key=sk-proj-YOUR_KEY_HERE
+# ai.openai.model=gpt-4o-mini
+# ai.openai.timeout-seconds=30
+# ai.openai.max-retry=2
+#
+# [Gemini] FREE TIER — Lấy key tại: https://aistudio.google.com/apikey
+# 30 RPM / 1500 req/ngày với gemini-2.0-flash-lite (hoàn toàn miễn phí)
+# Khi OpenAI hết quota hoặc chưa cấu hình, hệ thống TỰ ĐỘNG dùng Gemini.
+# ai.gemini.api-key=AIza...YOUR_GEMINI_KEY
+# ai.gemini.model=gemini-2.0-flash-lite
+
+# --- DB / Redis nếu khác mặc định trong application.properties ---
+# spring.datasource.url=jdbc:mysql://localhost:3306/tlcn_demo?...
+# spring.datasource.username=
 # spring.datasource.password=
 # spring.data.redis.password=

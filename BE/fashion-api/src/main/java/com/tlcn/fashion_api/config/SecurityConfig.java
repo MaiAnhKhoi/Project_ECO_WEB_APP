@@ -52,9 +52,6 @@ public class SecurityConfig {
                         //Public endpoints - Category
                         .requestMatchers("/api/categories/**").permitAll()
 
-                        // Public endpoints - Image proxy (for mobile)
-                        .requestMatchers("/api/image-proxy").permitAll()
-
                         .requestMatchers("/api/cart/**").permitAll()
                         .requestMatchers("/api/compare/**").permitAll()
                         .requestMatchers("/api/blogs/**").permitAll()
@@ -79,6 +76,20 @@ public class SecurityConfig {
 
                         // WebSocket chat (SockJS handshake & info endpoints)
                         .requestMatchers("/ws-chat/**").permitAll()
+
+                        // -------------------------------------------------------
+                        // AI endpoints — public (userId optional; auth enriches context)
+                        // -------------------------------------------------------
+                        // POST /api/ai/chat handled by AiChatServletRouter (RouterFunction)
+                        .requestMatchers(HttpMethod.POST, "/api/ai/chat").permitAll()
+                        // Outfit + product recommendations — public
+                        .requestMatchers(HttpMethod.POST, "/api/ai/recommend/outfit").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/ai/recommend/products").permitAll()
+                        .requestMatchers(HttpMethod.GET,  "/api/ai/recommend/trending").permitAll()
+                        // Behavior tracking — fire-and-forget, no auth required
+                        .requestMatchers(HttpMethod.POST, "/api/ai/behavior/track").permitAll()
+                        // Chat history + conversation detail — require auth (handled in controller)
+                        .requestMatchers(HttpMethod.GET,  "/api/ai/chat/conversation/**").permitAll()
 
                         // All other requests require authentication
                         .anyRequest().authenticated()

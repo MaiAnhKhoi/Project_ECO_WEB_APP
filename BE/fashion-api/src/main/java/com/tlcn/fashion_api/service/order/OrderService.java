@@ -16,16 +16,12 @@ import com.tlcn.fashion_api.entity.user.User;
 import com.tlcn.fashion_api.repository.address.AddressRepository;
 import com.tlcn.fashion_api.repository.order.OrderItemRepository;
 import com.tlcn.fashion_api.repository.order.OrderRepository;
-import com.tlcn.fashion_api.repository.order.PaymentRepository;
 import com.tlcn.fashion_api.repository.order.RefundRepository;
 import com.tlcn.fashion_api.repository.product.ProductImageRepository;
 import com.tlcn.fashion_api.repository.product.ProductRepository;
 import com.tlcn.fashion_api.repository.product.ProductVariantRepository;
 import com.tlcn.fashion_api.repository.product.VariantAttributeValueRepository;
 import com.tlcn.fashion_api.repository.user.UserRepository;
-import com.tlcn.fashion_api.common.enums.PaymentProvider;
-import com.tlcn.fashion_api.common.enums.PaymentStatus;
-import com.tlcn.fashion_api.entity.payment.Payment;
 import com.tlcn.fashion_api.service.coupon.CouponService;
 import com.tlcn.fashion_api.service.email.EmailService;
 import com.tlcn.fashion_api.service.inventory.InventoryService;
@@ -60,7 +56,6 @@ public class OrderService {
 
     private final InventoryService inventoryService;
     private final RefundRepository refundRepository;
-    private final PaymentRepository paymentRepository;
     private final CouponService couponService;
     private final EmailService emailService;
     private final ObjectMapper objectMapper;
@@ -378,7 +373,6 @@ public class OrderService {
         // ⭐️ FIX: Chỉ tăng sold count khi chuyển từ status khác sang COMPLETED
         // Kiểm tra lại trong DB để tránh race condition và duplicate increment
         boolean shouldIncreaseSoldCount = false;
-        Optional<Payment> codPayment = Optional.empty();
         if (newStatus == OrderStatus.COMPLETED && current != OrderStatus.COMPLETED) {
             // Double check: Query lại từ DB để đảm bảo order chưa COMPLETED
             Order freshOrder = orderRepository.findById(orderId)
@@ -389,10 +383,6 @@ public class OrderService {
             if (freshStatus == null || !OrderStatus.COMPLETED.name().equalsIgnoreCase(freshStatus)) {
                 shouldIncreaseSoldCount = true;
             }
-            
-            // Kiểm tra xem đơn có phải COD không (chỉ query một lần)
-            codPayment = paymentRepository
-                    .findFirstByOrderIdAndProviderOrderByCreatedAtDesc(orderId, PaymentProvider.COD);
         }
 
         order.setStatus(newStatus.name());
@@ -400,17 +390,6 @@ public class OrderService {
             order.setCancelReason(note);
         }
         order.setUpdatedAt(LocalDateTime.now());
-
-        // ⭐️ FIX: Khi đơn COD chuyển sang COMPLETED, tự động cập nhật paymentStatus thành "paid"
-        if (newStatus == OrderStatus.COMPLETED && codPayment.isPresent()) {
-            order.setPaymentStatus("paid");
-            
-            // Cập nhật Payment entity
-            Payment payment = codPayment.get();
-            payment.setStatus(PaymentStatus.PAID);
-            payment.setPaidAt(LocalDateTime.now());
-            paymentRepository.save(payment);
-        }
 
         if (shouldIncreaseSoldCount) {
             order.setShippingStatus("delivered");

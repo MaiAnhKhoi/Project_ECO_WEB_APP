@@ -92,11 +92,10 @@ public class OrderController {
     @GetMapping
     public OrderPageResponse getMyOrders(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String status
+            @RequestParam(defaultValue = "10") int size
     ) {
         Long userId = SecurityUtils.getCurrentUserId();
-        return orderQueryService.getMyOrders(userId, page, size, status);
+        return orderQueryService.getMyOrders(userId, page, size);
     }
 
     @GetMapping("/{orderId}")

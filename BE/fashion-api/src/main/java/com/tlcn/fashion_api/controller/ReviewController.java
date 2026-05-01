@@ -3,7 +3,6 @@ package com.tlcn.fashion_api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tlcn.fashion_api.common.response.ApiResponse;
 import com.tlcn.fashion_api.dto.review.CreateReviewRequest;
-import com.tlcn.fashion_api.dto.review.ReviewEligibilityDto;
 import com.tlcn.fashion_api.dto.review.TestimonialDto;
 import com.tlcn.fashion_api.dto.response.review.ReviewResponse;
 import com.tlcn.fashion_api.service.review.ReviewQueryService;
@@ -69,13 +68,13 @@ public class ReviewController {
 
     @GetMapping("/product/{productId}/check")
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Kiểm tra quyền đánh giá (đã mua COMPLETED và còn lượt review)")
-    public ResponseEntity<ApiResponse<ReviewEligibilityDto>> checkUserReviewed(
+    @Operation(summary = "Kiểm tra user đã đánh giá sản phẩm này chưa")
+    public ResponseEntity<ApiResponse<Boolean>> checkUserReviewed(
             @PathVariable Long productId
     ) {
         Long userId = com.tlcn.fashion_api.security.SecurityUtils.getCurrentUserId();
-        ReviewEligibilityDto eligibility = reviewService.getReviewEligibility(userId, productId);
-        return ResponseEntity.ok(ApiResponse.success(eligibility));
+        boolean hasReviewed = reviewService.hasUserReviewed(userId, productId);
+        return ResponseEntity.ok(ApiResponse.success(hasReviewed));
     }
 
     @GetMapping("/public/testimonials")

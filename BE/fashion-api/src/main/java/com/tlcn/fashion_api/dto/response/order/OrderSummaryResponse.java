@@ -17,8 +17,6 @@ public class OrderSummaryResponse {
     private String paymentStatus;
     private BigDecimal grandTotal;
     private LocalDateTime createdAt;
-    /** Hết hạn thanh toán PayOS (null nếu không áp dụng) — để FE chỉ hiện Thanh toán lại khi còn hạn */
-    private LocalDateTime paymentExpiresAt;
 
     private String paymentMethod;
     private String cancelReason; // Lý do hủy đơn (nếu admin đã hủy)

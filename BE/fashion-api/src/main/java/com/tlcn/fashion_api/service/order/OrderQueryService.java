@@ -1,7 +1,5 @@
 package com.tlcn.fashion_api.service.order;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tlcn.fashion_api.dto.order.OrderStatusResponse;
 import com.tlcn.fashion_api.dto.response.order.*;
 import com.tlcn.fashion_api.entity.address.Address;
@@ -37,7 +35,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderQueryService {
 
-    private final ObjectMapper objectMapper;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
@@ -65,14 +62,9 @@ public class OrderQueryService {
     // ==========================
     // 1. LIST ĐƠN HÀNG CỦA USER
     // ==========================
-    public OrderPageResponse getMyOrders(Long userId, int page, int size, String statusFilter) {
+    public OrderPageResponse getMyOrders(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Order> orderPage;
-        if (statusFilter == null || statusFilter.isBlank() || "all".equalsIgnoreCase(statusFilter)) {
-            orderPage = orderRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
-        } else {
-            orderPage = orderRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, statusFilter, pageable);
-        }
+        Page<Order> orderPage = orderRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
 
         List<OrderSummaryResponse> content = orderPage.getContent().stream()
                 .map(this::toSummaryDto)
@@ -94,28 +86,7 @@ public class OrderQueryService {
                 .paymentStatus(o.getPaymentStatus())
                 .grandTotal(o.getGrandTotal())
                 .createdAt(o.getCreatedAt())
-                .paymentExpiresAt(o.getPaymentExpiresAt())
-                .paymentMethod(extractPaymentMethod(o))
-                .cancelReason(o.getCancelReason())
                 .build();
-    }
-
-    /** Giống OrderService — lấy COD/PAYOS từ snapshot checkout để FE hiện Thanh toán lại. */
-    private String extractPaymentMethod(Order order) {
-        String snapshot = order.getSnapshotJson();
-        if (snapshot == null || snapshot.isBlank()) {
-            return null;
-        }
-        try {
-            JsonNode root = objectMapper.readTree(snapshot);
-            JsonNode pmNode = root.get("paymentMethod");
-            if (pmNode != null && !pmNode.isNull()) {
-                return pmNode.asText();
-            }
-        } catch (Exception ignored) {
-            // ignore
-        }
-        return null;
     }
 
     // ==========================
@@ -146,7 +117,6 @@ public class OrderQueryService {
                 .orderCode(order.getOrderCode())
                 .status(order.getStatus())
                 .paymentStatus(order.getPaymentStatus())
-                .paymentMethod(extractPaymentMethod(order))
                 .subtotal(order.getSubtotal())
                 .discountTotal(order.getDiscountTotal())
                 .taxTotal(order.getTaxTotal())

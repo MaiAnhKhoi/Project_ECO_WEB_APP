@@ -4,7 +4,6 @@ import com.tlcn.fashion_api.cloudinary.CloudinaryService;
 import com.tlcn.fashion_api.common.exception.BadRequestException;
 import com.tlcn.fashion_api.common.exception.ResourceNotFoundException;
 import com.tlcn.fashion_api.dto.review.CreateReviewRequest;
-import com.tlcn.fashion_api.dto.review.ReviewEligibilityDto;
 import com.tlcn.fashion_api.dto.review.TestimonialDto;
 import com.tlcn.fashion_api.dto.response.review.ReviewResponse;
 import com.tlcn.fashion_api.mapper.review.ReviewMapper;
@@ -167,16 +166,12 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional(readOnly = true)
-    public ReviewEligibilityDto getReviewEligibility(Long userId, Long productId) {
-        long completedPurchaseCount = orderItemRepository.countPurchasesByUserIdAndProductIdAndOrderStatusCompleted(
+    public boolean hasUserReviewed(Long userId, Long productId) {
+        // Kiểm tra: số lần review >= số lần mua COMPLETED (không thể review thêm)
+        long purchaseCount = orderItemRepository.countPurchasesByUserIdAndProductIdAndOrderStatusCompleted(
                 userId, productId);
         long reviewCount = reviewRepository.countByUserIdAndProductId(userId, productId);
-        boolean canReview = completedPurchaseCount > 0 && reviewCount < completedPurchaseCount;
-        return ReviewEligibilityDto.builder()
-                .canReview(canReview)
-                .completedPurchaseCount(completedPurchaseCount)
-                .reviewCount(reviewCount)
-                .build();
+        return reviewCount >= purchaseCount;
     }
 
     @Override

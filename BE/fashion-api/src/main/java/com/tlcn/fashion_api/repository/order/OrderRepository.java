@@ -24,8 +24,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Page<Order> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
-    Page<Order> findByUserIdAndStatusOrderByCreatedAtDesc(Long userId, String status, Pageable pageable);
-
     Optional<Order> findByIdAndUserId(Long id, Long userId);
 
     long countByCreatedAtAfter(java.time.LocalDateTime dateTime);
