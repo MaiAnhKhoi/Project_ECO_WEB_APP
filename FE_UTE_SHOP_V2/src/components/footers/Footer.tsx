@@ -1,8 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
-import type { FormSubmitHandler, ErrorResponse } from "@/types";
 import { shopConfig } from "@/config/shop";
 import shopSettingApi, {
   ShopSettingResponse,
@@ -14,48 +12,8 @@ export default function Footer({
   fullWidth = false,
   parentClass = "footer-default",
 }) {
-  const [success, setSuccess] = useState(true);
-  const [showMessage, setShowMessage] = useState(false);
-
   const [settings, setSettings] = useState<ShopSettingResponse | null>(null);
-  const [loadingSettings, setLoadingSettings] = useState(true);
-
-  const handleShowMessage = () => {
-    setShowMessage(true);
-    setTimeout(() => {
-      setShowMessage(false);
-    }, 2000);
-  };
-
-  const sendEmail: FormSubmitHandler = async (e) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const email = (form.email as HTMLInputElement).value;
-
-    try {
-      const response = await axios.post(
-        "https://express-brevomail.vercel.app/api/contacts",
-        {
-          email,
-        }
-      );
-
-      if ([200, 201].includes(response.status)) {
-        form.reset();
-        setSuccess(true);
-        handleShowMessage();
-      } else {
-        setSuccess(false);
-        handleShowMessage();
-      }
-    } catch (error) {
-      const err = error as ErrorResponse;
-      console.error("Error:", err.response?.data || "An error occurred");
-      setSuccess(false);
-      handleShowMessage();
-      form.reset();
-    }
-  };
+  const [, setLoadingSettings] = useState(true);
 
   // Gọi API shop settings
   useEffect(() => {

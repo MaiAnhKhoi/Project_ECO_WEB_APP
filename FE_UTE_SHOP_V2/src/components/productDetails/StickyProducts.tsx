@@ -102,6 +102,7 @@ export default function StickyProducts({ product }: StickyProductsProps) {
               <div className="tf-sticky-atc-btns">
                 <div className="tf-product-info-quantity">
                   <QuantitySelect
+                    max={99}
                     quantity={currentCartQty}
                     setQuantity={(qty) => {
                       if (isAddedToCartProducts(product.id)) {

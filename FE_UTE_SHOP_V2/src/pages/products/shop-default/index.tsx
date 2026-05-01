@@ -1,6 +1,5 @@
 import Footer from "@/components/footers/Footer";
 import Header from "@/components/headers/Header";
-import Breadcumb from "@/components/products/Breadcumb";
 import Features from "@/components/products/Features";
 import Products from "@/components/products/Products";
 import MetaComponent from "@/components/common/MetaComponent";

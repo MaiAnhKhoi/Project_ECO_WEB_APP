@@ -1,11 +1,9 @@
 import Footer from "@/components/footers/Footer";
 import Header from "@/components/headers/Header";
-import RelatedProducts from "@/components/otherPages/RelatedProducts";
 import ShopCart from "@/components/otherPages/ShopCart";
 import MetaComponent from "@/components/common/MetaComponent";
 import Breadcumb from "@/components/common/Breadcumb";
 import { createPageMetadata } from "@/config/shop";
-import { formatPrice } from "@/utils/formatPrice";
 
 const metadata = createPageMetadata("Giỏ hàng");
 export default function ViewCartPage() {

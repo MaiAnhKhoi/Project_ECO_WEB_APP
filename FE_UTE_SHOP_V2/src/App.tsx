@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import "../public/scss/main.scss";
 import "photoswipe/dist/photoswipe.css";
 import "rc-slider/assets/index.css";
@@ -57,6 +57,13 @@ import AccountSettingsPage from "./pages/dashboard/account-settings";
 import AccountReviewsPage from "./pages/dashboard/account-reviews";
 import ReviewDetailPage from "./pages/reviews/review-detail";
 import VerifyEmail from "./components/modals/VerifyEmail";
+import { lazy, Suspense } from "react";
+import ChatbotWidget from "@/features/ai/components/ChatbotWidget";
+import "@/features/ai/components/chat/AiChatDrawer.scss";
+import "@/features/ai/components/AIRecommendSection.scss";
+import "@/features/ai/pages/AiStylistPage.scss";
+
+const AiStylistPage = lazy(() => import("@/features/ai/pages/AiStylistPage"));
 
 function App(): React.JSX.Element {
   const { pathname } = useLocation();
@@ -277,6 +284,17 @@ return (
               <Route path="blog-grid-01" element={<BlogGridPage1 />} />
               <Route path="blog-single/:id" element={<BlogDetailsPage1 />} />
               <Route path="blog-category/:slug" element={<BlogCategoryPage />} />
+
+              {/* AI Stylist */}
+              <Route
+                path="ai-stylist"
+                element={
+                  <Suspense fallback={<div className="tf-preload"><span className="loader" /></div>}>
+                    <AiStylistPage />
+                  </Suspense>
+                }
+              />
+
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
@@ -303,6 +321,7 @@ return (
       <ScrollTop />
       <RtlToggler />
       <ScrollTopBehaviour />
+      <ChatbotWidget />
     </>
   );
 }

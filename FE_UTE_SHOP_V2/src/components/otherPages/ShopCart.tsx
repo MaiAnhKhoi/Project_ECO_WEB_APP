@@ -1,7 +1,6 @@
 "use client";
 
 import { iconFeatures } from "@/data/features";
-import { testimonials12 } from "@/data/testimonials";
 import { Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Link } from "react-router-dom";

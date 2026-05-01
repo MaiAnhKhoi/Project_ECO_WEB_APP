@@ -1,7 +1,4 @@
 "use client";
-import { features2 } from "@/data/features";
-import { Pagination } from "swiper/modules";
-import { Swiper, SwiperSlide } from "swiper/react";
 
 export default function FeaturesSecondary() {
   return (

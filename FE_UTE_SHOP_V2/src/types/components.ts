@@ -120,7 +120,7 @@ export interface GridProductsProps {
 // Common
 export interface QuantitySelectProps {
   quantity?: number;
-    max: number;
+  max?: number;
   setQuantity?: (qty: number) => void;
   styleClass?: string;
 }

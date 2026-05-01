@@ -26,7 +26,7 @@ export default function Slider({
   // }
 
   const [thumbSwiper, setThumbSwiper] = useState<any>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [, setActiveIndex] = useState(0);
   const swiperRef = useRef<any>(null);
 
   // =============== ZOOM ===============

@@ -8,7 +8,6 @@ import Breadcumb from "@/components/productDetails/Breadcumb";
 import DescriptionAccordion from "@/components/productDetails/DescriptionAccordion";
 import Details from "@/components/productDetails/Details";
 import RecentlyViewedProducts from "@/components/productDetails/RecentlyViewedProducts";
-import RecommendedProdtcts from "@/components/productDetails/RecommendedProdtcts";
 import MetaComponent from "@/components/common/MetaComponent";
 import { createPageMetadata } from "@/config/shop";
 

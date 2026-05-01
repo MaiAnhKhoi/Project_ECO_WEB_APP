@@ -1,5 +1,5 @@
 
-import type { FilterState, FilterAction, Product } from "@/types";
+import type { FilterState, FilterAction } from "@/types";
 
 export const initialState: FilterState = {
   price: [20, 300],

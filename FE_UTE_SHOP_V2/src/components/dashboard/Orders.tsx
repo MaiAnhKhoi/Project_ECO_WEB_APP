@@ -32,8 +32,8 @@ const [payCheckoutUrl, setPayCheckoutUrl] = useState<string | null>(null);
 const [payQrContent, setPayQrContent] = useState<string | null>(null);
 const [payExpiresAt, setPayExpiresAt] = useState<string | null>(null);
 
-const [payPaymentStatus, setPayPaymentStatus] = useState<string | null>(null);
-const [payOrderStatus, setPayOrderStatus] = useState<string | null>(null);
+const [, setPayPaymentStatus] = useState<string | null>(null);
+const [, setPayOrderStatus] = useState<string | null>(null);
 
 
 

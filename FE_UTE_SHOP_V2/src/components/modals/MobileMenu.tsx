@@ -45,6 +45,7 @@ export default function MobileMenu() {
     pathname.startsWith("/blog") ||
     pathname.startsWith("/blog-single") ||
     pathname.startsWith("/blog-category");
+  const isAiStylistActive = pathname.startsWith("/ai-stylist");
   const isAboutActive = pathname.startsWith("/about-us");
   const isContactActive = pathname.startsWith("/contact-us");
 
@@ -101,6 +102,16 @@ export default function MobileMenu() {
                   className={`mb-menu-link ${isProductActive ? "menuActive" : ""}`}
                 >
                   <span>Sản phẩm</span>
+                </Link>
+              </li>
+
+              {/* AI STYLIST */}
+              <li className="nav-mb-item">
+                <Link
+                  to="/ai-stylist"
+                  className={`mb-menu-link ${isAiStylistActive ? "menuActive" : ""}`}
+                >
+                  <span>AI Stylist</span>
                 </Link>
               </li>
 

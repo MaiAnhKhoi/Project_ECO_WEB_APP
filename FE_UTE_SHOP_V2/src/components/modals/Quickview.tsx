@@ -16,6 +16,22 @@ export default function Quickview() {
     cartProducts,
     updateQuantity,
   } = useContextElement();
+
+  if (!quickViewItem) {
+    return (
+      <div className="modal fade modalCentered modal-quick-view" id="quickView">
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <span
+              className="icon-close icon-close-popup"
+              data-bs-dismiss="modal"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="modal fade modalCentered modal-quick-view" id="quickView">
       <div className="modal-dialog modal-dialog-centered">
@@ -99,6 +115,7 @@ export default function Quickview() {
               <div className="tf-product-total-quantity">
                 <div className="group-btn">
                   <QuantitySelect
+                    max={99}
                     quantity={
                       isAddedToCartProducts(quickViewItem.id)
                         ? cartProducts.filter(

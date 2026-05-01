@@ -1,7 +1,6 @@
 // src/components/productDetails/DescriptionAccordion.tsx
 import Description from "./Description";
 import Material from "./Material";
-import ReturnPolicies from "./ReturnPolicies";
 import AdditionalInfo from "./AdditionalInfo";
 import Reviews from "./Reviews";
 import type { ProductTabsResponse } from "@/types/product";

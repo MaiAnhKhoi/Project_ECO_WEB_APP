@@ -19,7 +19,7 @@ export default function SideAccordions() {
         </div>
         <div id="description" className="collapse">
           <div className="accordion-body widget-desc">
-            <Description />
+            <Description data={null} />
           </div>
         </div>
       </div>
@@ -37,7 +37,7 @@ export default function SideAccordions() {
         </div>
         <div id="material" className="collapse">
           <div className="accordion-body widget-material">
-            <Material />
+            <Material data={null} />
           </div>
         </div>
       </div>

@@ -3,6 +3,23 @@ import { products36 } from "@/data/products";
 import { Swiper, SwiperSlide } from "swiper/react";
 import ProductCard from "../productCards/ProductCard";
 import { Navigation, Pagination } from "swiper/modules";
+import type { Product } from "@/types/product";
+
+function toProductCard(elm: (typeof products36)[number]): Product {
+  return {
+    ...elm,
+    colors: elm.colors?.map((c) => ({
+      label:
+        "label" in c && c.label != null
+          ? String(c.label)
+          : "title" in c
+            ? String((c as { title?: string }).title ?? "")
+            : "",
+      value: c.value,
+      img: c.img,
+    })),
+  } as Product;
+}
 
 export default function RelatedProducts() {
   return (
@@ -38,7 +55,7 @@ export default function RelatedProducts() {
             {products36.map((elm, i) => (
               <SwiperSlide key={i}>
                 <ProductCard
-                  product={elm}
+                  product={toProductCard(elm)}
                   styleClass="style-2"
                   tooltipDirection="top"
                 />

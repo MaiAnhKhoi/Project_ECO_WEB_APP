@@ -23,7 +23,7 @@ export interface PayOSPaymentModalProps {
 
 export default function PayOSPaymentModal({
   isOpen,
-  onClose,
+  onClose: _onClose,
   orderId,
   checkoutUrl,
   qrContent,

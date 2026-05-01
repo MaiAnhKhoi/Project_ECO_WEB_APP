@@ -78,7 +78,7 @@ export default function Checkout() {
   const [loadingCoupons, setLoadingCoupons] = useState(false);
 
   const [couponCode, setCouponCode] = useState<string>("");
-  const [couponLoading, setCouponLoading] = useState<boolean>(false);
+  const [, setCouponLoading] = useState<boolean>(false);
   const [couponError, setCouponError] = useState<string>("");
   const [couponSuccess, setCouponSuccess] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);

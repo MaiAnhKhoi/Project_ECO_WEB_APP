@@ -6,11 +6,6 @@ import { useAuth } from "@/context/authContext";
 import authApi from "@/services/authApi";
 import Sidebar from "./Sidebar";
 
-function formatDate(value?: string | null) {
-  if (!value) return "—";
-  return new Date(value).toLocaleString("vi-VN");
-}
-
 export default function ChangePasswordPage() {
   const { user } = useAuth();
   const navigate = useNavigate();

@@ -13,6 +13,7 @@ export default function Nav() {
     pathname.startsWith("/blog") ||
     pathname.startsWith("/blog-single") ||
     pathname.startsWith("/blog-category");
+  const isAiStylistActive = pathname.startsWith("/ai-stylist");
   const isAboutActive = pathname.startsWith("/about-us");
   const isContactActive = pathname.startsWith("/contact-us");
 
@@ -82,6 +83,16 @@ export default function Nav() {
           className={`item-link ${isProductActive ? "menuActive" : ""}`}
         >
           Sản phẩm
+        </Link>
+      </li>
+
+      {/* AI STYLIST */}
+      <li className="menu-item">
+        <Link
+          to="/ai-stylist"
+          className={`item-link ${isAiStylistActive ? "menuActive" : ""}`}
+        >
+          AI Stylist
         </Link>
       </li>
 

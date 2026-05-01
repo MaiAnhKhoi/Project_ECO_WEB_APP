@@ -3,7 +3,6 @@ import Header from "@/components/headers/Header";
 import About from "@/components/otherPages/About";
 import Features from "@/components/otherPages/Features";
 import FeaturesSecondary from "@/components/otherPages/FeaturesSecondary";
-import Testimonials from "@/components/otherPages/Testimonials";
 
 import MetaComponent from "@/components/common/MetaComponent";
 import { createPageMetadata } from "@/config/shop";

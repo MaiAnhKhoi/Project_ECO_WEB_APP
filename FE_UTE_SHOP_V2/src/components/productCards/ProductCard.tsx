@@ -25,7 +25,6 @@ export default function ProductCard({
     isAddedtoWishlist,
     addToCompareItem,
     isAddedtoCompareItem,
-    setQuickViewItem,
     addProductToCart,
     isAddedToCartProducts,
   } = useContextElement();
