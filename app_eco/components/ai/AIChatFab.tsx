@@ -24,7 +24,14 @@ function useAIChatFabVisible(): boolean {
 
   return useMemo(() => {
     if (!pathname) return false;
-    if (pathname.startsWith("/ai-chat") || pathname.startsWith("/ai-stylist")) return false;
+    if (
+     pathname.startsWith("/ai-chat") ||
+     pathname.startsWith("/ai-stylist") ||
+     pathname.startsWith("/ai-outfit") ||
+     pathname.startsWith("/ai-style-analysis") ||
+     pathname.startsWith("/ai-history") ||
+     pathname.startsWith("/ai-hub")
+   ) return false;
     if (pathname.startsWith("/product")) return true;
 
     const isTabs = segments[0] === "(tabs)";

@@ -66,6 +66,10 @@ function RootLayoutInner() {
     pathname?.startsWith("/chat") ||
     pathname?.startsWith("/ai-chat") ||
     pathname?.startsWith("/ai-stylist") ||
+    pathname?.startsWith("/ai-outfit") ||
+    pathname?.startsWith("/ai-style-analysis") ||
+    pathname?.startsWith("/ai-hub") ||
+    pathname?.startsWith("/ai-history") ||
     pathname?.startsWith("/search") ||
     pathname?.startsWith("/product") ||
     pathname?.startsWith("/compare") ||
@@ -128,9 +132,13 @@ function RootLayoutInner() {
             <Stack.Screen name="about" />
             <Stack.Screen name="contact" />
             <Stack.Screen name="chat" />
-            <Stack.Screen name="ai-chat" />
-            <Stack.Screen name="ai-stylist" />
-            <Stack.Screen name="search" />
+          <Stack.Screen name="ai-chat" />
+          <Stack.Screen name="ai-stylist" />
+          <Stack.Screen name="ai-outfit/[id]" />
+          <Stack.Screen name="ai-style-analysis" />
+          <Stack.Screen name="ai-hub" />
+            <Stack.Screen name="ai-history" />
+          <Stack.Screen name="search" />
             <Stack.Screen name="product/[id]" />
             <Stack.Screen name="order/[id]" />
             <Stack.Screen name="checkout" />

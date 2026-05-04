@@ -1,20 +1,17 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { sendAIChat } from "@/services/aiApi";
-import type { ChatMessage, ChatResponse } from "@/types/ai";
 import { AI_QUERY_KEYS } from "@/queries/aiQueries";
+import { fetchAIConversation, sendAIChat } from "@/services/aiApi";
+import type { ChatMessage, ChatResponse } from "@/types/ai";
 
-// ============================================================
-// useAIChat
-//
-// Quản lý phiên chat AI: local messages + mutation gửi tin.
-// Logic giống hệt web useChatSession — chỉ dùng RN state.
-// ============================================================
+export type UseAIChatOptions = {
+  resumeConversationId?: number;
+};
 
-export function useAIChat(initialSessionId?: string) {
+export function useAIChat(options?: UseAIChatOptions) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [sessionId, setSessionId] = useState<string | undefined>(initialSessionId);
+  const [sessionId, setSessionId] = useState<string | undefined>();
   const [conversationId, setConversationId] = useState<number | undefined>();
   const [error, setError] = useState<string | null>(null);
 
@@ -22,6 +19,34 @@ export function useAIChat(initialSessionId?: string) {
   sessionIdRef.current = sessionId;
 
   const qc = useQueryClient();
+  const resumeId =
+    options?.resumeConversationId != null &&
+    Number.isFinite(options.resumeConversationId) &&
+    options.resumeConversationId > 0
+      ? options.resumeConversationId
+      : undefined;
+
+  const resumeAppliedRef = useRef(false);
+
+  useEffect(() => {
+    resumeAppliedRef.current = false;
+  }, [resumeId]);
+
+  const convQuery = useQuery({
+    queryKey: resumeId != null ? AI_QUERY_KEYS.conversation(resumeId) : ["ai", "chat", "conversation", "idle"],
+    queryFn: () => fetchAIConversation(resumeId!),
+    enabled: resumeId != null,
+  });
+
+  useEffect(() => {
+    if (resumeAppliedRef.current) return;
+    if (!convQuery.data || convQuery.isError) return;
+    resumeAppliedRef.current = true;
+    setSessionId(convQuery.data.sessionId);
+    setConversationId(convQuery.data.conversationId);
+    setMessages(convQuery.data.messages ?? []);
+    setError(null);
+  }, [convQuery.data, convQuery.isError]);
 
   const mutation = useMutation({
     mutationFn: sendAIChat,
@@ -80,16 +105,18 @@ export function useAIChat(initialSessionId?: string) {
     setSessionId(undefined);
     setConversationId(undefined);
     setError(null);
+    resumeAppliedRef.current = true;
   }, [mutation]);
 
   return {
     messages,
     sendMessage,
     clearMessages,
-    isLoading: mutation.isPending,
+    isLoading: mutation.isPending || (!!resumeId && !convQuery.isFetched),
     error,
     sessionId,
     conversationId,
     lastResponse: mutation.data,
+    resumeError: convQuery.isError,
   };
 }

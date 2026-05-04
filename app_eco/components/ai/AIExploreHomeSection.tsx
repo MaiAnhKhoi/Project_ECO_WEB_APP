@@ -1,13 +1,13 @@
 import { useRouter } from "expo-router";
 import React, { memo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { AIQuickActionTriplet } from "@/components/ai/AIQuickActionTriplet";
 import { AIRecommendSection } from "@/components/ai/AIRecommendSection";
-import { AppIcon } from "@/components/ui/AppIcon";
-import { CustomButton } from "@/components/ui/CustomButton";
 import { useAppColors } from "@/hooks/use-app-colors";
 import type { ProductSuggestion } from "@/types/ai";
 import { navLockRun } from "@/utils/navLock";
+import { useAuthStore } from "@/store/authStore";
 
 type Props = {
   products: ProductSuggestion[];
@@ -15,11 +15,22 @@ type Props = {
 };
 
 /**
- * Block “Khám phá với AI” trên Home: CTA Chat + Tạo outfit + carousel gợi ý (đồng bộ web).
+ * Khối “Khám phá cùng AI” trên Home: 3 CTA (Chat / Outfit / Phân tích phong cách) + gợi ý + lối tắt hub & lịch sử.
  */
 function AIExploreHomeSectionInner({ products, loading = false }: Props) {
   const colors = useAppColors();
   const router = useRouter();
+  const token = useAuthStore((s) => s.accessToken);
+
+  const goHistory = () => {
+    navLockRun(() => {
+      if (!token) {
+        router.push({ pathname: "/auth/login", params: { next: "/ai-history" } } as any);
+        return;
+      }
+      router.push("/ai-history" as any);
+    });
+  };
 
   return (
     <View style={styles.outer}>
@@ -33,34 +44,32 @@ function AIExploreHomeSectionInner({ products, loading = false }: Props) {
         ]}
       >
         <View style={styles.titleRow}>
-          <Text style={[styles.kicker, { color: colors.tint }]}>✨ Khám phá với AI</Text>
+          <Text style={[styles.kicker, { color: colors.tint }]}>✨ Khám phá cùng AI</Text>
         </View>
         <Text style={[styles.headline, { color: colors.text }]}>
-          Hỏi mua sắm & tạo outfit
+          Mua sắm thông minh & phong cách
         </Text>
         <Text style={[styles.desc, { color: colors.mutedText }]}>
-          Chat với UTE Shop AI hoặc tạo 3 bộ outfit từ sản phẩm có trong shop.
+          Chat tư vấn sản phẩm, tạo outfit từ hàng trong shop, hoặc phân tích phong cách từ ảnh của bạn.
         </Text>
 
-        <View style={styles.ctaRow}>
-          <View style={styles.ctaHalf}>
-            <CustomButton
-              title="Chat với AI"
-              variant="secondary"
-              onPress={() => navLockRun(() => router.push("/ai-chat" as any))}
-              leftIcon={<AppIcon name="message-circle" size={18} color={colors.text} />}
-              style={styles.ctaBtn}
-            />
-          </View>
-          <View style={styles.ctaHalf}>
-            <CustomButton
-              title="Tạo outfit"
-              variant="primary"
-              onPress={() => navLockRun(() => router.push("/ai-stylist" as any))}
-              leftIcon={<AppIcon name="layers" size={18} color="#fff" />}
-              style={styles.ctaBtn}
-            />
-          </View>
+        <View style={styles.tripletOuter}>
+          <AIQuickActionTriplet />
+        </View>
+
+        <View style={[styles.subLinkRow, { borderTopColor: colors.divider }]}>
+          <Pressable
+            onPress={() => navLockRun(() => router.push("/ai-hub" as any))}
+            accessibilityRole="button"
+            accessibilityLabel="Trung tâm AI"
+            style={styles.subLink}
+          >
+            <Text style={[styles.subLinkText, { color: colors.tint }]}>Trung tâm AI</Text>
+          </Pressable>
+          <Text style={{ color: colors.mutedText }}>·</Text>
+          <Pressable onPress={goHistory} accessibilityRole="button" accessibilityLabel="Lịch sử AI" style={styles.subLink}>
+            <Text style={[styles.subLinkText, { color: colors.tint }]}>Lịch sử AI</Text>
+          </Pressable>
         </View>
       </View>
 
@@ -98,14 +107,22 @@ const styles = StyleSheet.create({
   titleRow: { marginBottom: 4 },
   kicker: { fontSize: 12, fontWeight: "700" },
   headline: { fontSize: 17, fontWeight: "700", marginBottom: 6 },
-  desc: { fontSize: 13, lineHeight: 20, marginBottom: 14 },
-  ctaRow: { flexDirection: "row", gap: 10 },
-  ctaHalf: { flex: 1, minWidth: 0 },
-  ctaBtn: {
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderRadius: 14,
+  desc: { fontSize: 14, lineHeight: 22, marginBottom: 12 },
+  tripletOuter: {
+    alignSelf: "stretch",
+    width: "100%",
   },
+  subLinkRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    paddingTop: 12,
+    marginTop: 4,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  subLink: { paddingVertical: 4, paddingHorizontal: 4 },
+  subLinkText: { fontSize: 13, fontWeight: "600" },
   listWrap: { marginTop: 12 },
   listLabel: {
     fontSize: 12,

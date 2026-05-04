@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   FlatList,
@@ -34,7 +34,14 @@ const QUICK_SUGGESTIONS = [
 export default function AIChatScreen() {
   const router = useRouter();
   const colors = useAppColors();
-  const { messages, sendMessage, isLoading, clearMessages } = useAIChat();
+  const params = useLocalSearchParams<{ conversationId?: string }>();
+  const resumeConvId = params.conversationId ? Number(params.conversationId) : undefined;
+  const { messages, sendMessage, isLoading, clearMessages, resumeError } = useAIChat({
+    resumeConversationId:
+      resumeConvId != null && Number.isFinite(resumeConvId) && resumeConvId > 0
+        ? resumeConvId
+        : undefined,
+  });
 
   const [input, setInput] = useState("");
   const listRef = useRef<FlatList<ChatMessage>>(null);
@@ -153,6 +160,14 @@ export default function AIChatScreen() {
           </View>
         </View>
       </View>
+
+      {resumeError ? (
+        <View style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+          <Text style={{ color: "#b91c1c", fontSize: 13 }}>
+            Không tải được cuộc trò chuyện. Vui lòng đăng nhập và thử lại.
+          </Text>
+        </View>
+      ) : null}
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}

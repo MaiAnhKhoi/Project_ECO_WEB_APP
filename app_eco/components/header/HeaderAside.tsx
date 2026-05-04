@@ -40,6 +40,9 @@ const MENU_ITEMS: MenuEntry[] = [
   { label: "Đánh giá của tôi", href: "/my-reviews", icon: "star" },
   { label: "Chat AI", href: "/ai-chat", icon: "message-circle" },
   { label: "AI Stylist", href: "/ai-stylist", icon: "layers" },
+  { label: "Phân tích phong cách", href: "/ai-style-analysis", icon: "camera" },
+  { label: "Trung tâm AI", href: "/ai-hub", icon: "cpu" },
+  { label: "Lịch sử AI", href: "/ai-history", icon: "clock" },
   { label: "Blog", href: "/blog", icon: "book-open" },
   { label: "Giới thiệu", href: "/about", icon: "info" },
   { label: "Liên hệ", href: "/contact", icon: "phone" },
@@ -79,6 +82,7 @@ export default function HeaderAside() {
           "/profile",
           "/addresses",
           "/my-reviews",
+          "/ai-history",
           "/(tabs)/orders",
           "/(tabs)/wishlist",
         ];

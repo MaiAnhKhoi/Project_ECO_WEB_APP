@@ -123,6 +123,38 @@ export default function ProfileScreen() {
           </Text>
         ) : null}
 
+        <View
+          className="mt-4"
+          style={{
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.background,
+            padding: 14,
+          }}
+        >
+          <Text className="text-[18px] font-semibold" style={{ color: colors.text }}>
+            AI & Khám phá
+          </Text>
+          <Text className="mt-1 text-sm" style={{ color: colors.mutedText }}>
+            Trung tâm công cụ AI và lịch sử chat, outfit, phân tích phong cách.
+          </Text>
+          <View className="mt-4" style={{ gap: 10 }}>
+            <CustomButton
+              title="Trung tâm AI"
+              variant="secondary"
+              onPress={() => navLockRun(() => router.push("/ai-hub" as any))}
+              style={{ width: "100%" }}
+            />
+            <CustomButton
+              title="Lịch sử AI"
+              variant="secondary"
+              onPress={() => navLockRun(() => router.push("/ai-history" as any))}
+              style={{ width: "100%" }}
+            />
+          </View>
+        </View>
+
         <View className="mt-6">
           <View
             style={{

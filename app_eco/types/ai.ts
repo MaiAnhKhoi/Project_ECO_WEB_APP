@@ -102,3 +102,49 @@ export interface AIBehaviorTrackParams {
   behaviorType: string;
   sessionId?: string;
 }
+
+// ============================================================
+// AI Style Analysis
+// ============================================================
+
+export type Gender = "MALE" | "FEMALE" | "UNISEX" | "UNKNOWN";
+
+export interface StyleAnalysisResponse {
+ gender: Gender;
+ bodyType: string;
+ skinTone: string;
+ recommendedStyle: string;
+ confidenceScore: number;
+ analyzedImageUrl: string;
+ /** true when AI is unsure about gender */
+ needsGenderConfirmation: boolean;
+ products: ProductSuggestion[];
+ fromCache: boolean;
+ profileId?: number;
+}
+
+// ============================================================
+// AI History (BE: StyleAnalysisHistoryDto, RecommendationHistoryDto)
+// ============================================================
+
+export interface StyleAnalysisHistoryItem {
+  id: number;
+  imageUrl: string;
+  bodyType: string;
+  skinTone: string;
+  recommendedStyle: string;
+  gender: Gender | null;
+  confidenceScore?: number | null;
+  needsGenderConfirmation?: boolean | null;
+  createdAt: string;
+  products: ProductSuggestion[];
+}
+
+export interface RecommendationHistory {
+  id: number;
+  type: string;
+  userPrompt: string | null;
+  tokensUsed: number | null;
+  cacheHit: boolean;
+  createdAt: string;
+}
