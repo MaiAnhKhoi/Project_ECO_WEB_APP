@@ -1,5 +1,10 @@
 import React, { useCallback, useRef, useState, memo } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  FiAlertCircle,
+  FiArrowLeft,
+  FiStar,
+} from "react-icons/fi";
 import Header from "@/components/headers/Header";
 import Footer from "@/components/footers/Footer";
 import MetaComponent from "@/components/common/MetaComponent";
@@ -9,7 +14,7 @@ import { useOutfitGenerator } from "../hooks/useRecommendations";
 import { OutfitResultCard } from "../components/stylist/OutfitResultCard";
 import "./AiStylistPage.scss";
 
-const metadata = createPageMetadata("AI Stylist — Gợi ý outfit");
+const metadata = createPageMetadata("Tạo outfit với AI — UTE Shop");
 
 const OutfitSkeletonGrid = memo(() => (
   <div className="ai-outfit-skeleton">
@@ -64,6 +69,8 @@ export default function AiStylistPage() {
   const { mutate: generate, data, isPending, error, isSuccess, reset } =
     useOutfitGenerator();
 
+  const displayData = isSuccess && data ? data : null;
+
   const handleAddItemsToCart = useCallback(
     (productIds: number[]) => {
       let delay = 0;
@@ -102,6 +109,11 @@ export default function AiStylistPage() {
     [reset]
   );
 
+  const showSkeleton = isPending;
+  const showMutationError = Boolean(error);
+  const showFeaturesCta =
+    !showSkeleton && !displayData && !showMutationError;
+
   return (
     <>
       <MetaComponent meta={metadata} />
@@ -118,7 +130,7 @@ export default function AiStylistPage() {
               <span />
             </li>
             <li className="item-breadcrumb">
-              <span className="text">AI Stylist</span>
+              <span className="text">Tạo outfit</span>
             </li>
           </ul>
         </div>
@@ -133,7 +145,7 @@ export default function AiStylistPage() {
               onClick={() => navigate(-1)}
               aria-label="Quay lại trang trước"
             >
-              <span className="icon icon-arrow1-left" style={{ marginRight: 8 }} aria-hidden="true" />
+              <FiArrowLeft size={18} style={{ marginRight: 8 }} aria-hidden="true" />
               Quay lại
             </button>
             <Link
@@ -151,19 +163,8 @@ export default function AiStylistPage() {
         <div className="container">
           <div className="ai-stylist-hero">
             <div className="ai-stylist-hero__badge">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                  fill="currentColor"
-                />
-              </svg>
-              AI Stylist
+              <FiStar size={16} strokeWidth={2} aria-hidden="true" />
+              Tạo outfit với AI
             </div>
             <h1 className="ai-stylist-hero__title">
               Gợi ý outfit theo sản phẩm thật
@@ -209,18 +210,7 @@ export default function AiStylistPage() {
                     </>
                   ) : (
                     <>
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                          fill="currentColor"
-                        />
-                      </svg>
+                      <FiStar size={18} strokeWidth={2} aria-hidden="true" />
                       Tạo outfit
                     </>
                   )}
@@ -244,28 +234,28 @@ export default function AiStylistPage() {
             </div>
           </div>
 
-          {isPending && <OutfitSkeletonGrid />}
+          {showSkeleton && <OutfitSkeletonGrid />}
 
-          {error ? (
+          {showMutationError ? (
             <div className="ai-stylist-error" role="alert">
-              <span className="icon icon-warning" aria-hidden="true" />
+              <FiAlertCircle size={22} aria-hidden="true" />
               <p>Không thể tạo outfit lúc này. Vui lòng thử lại sau.</p>
             </div>
           ) : null}
 
-          {isSuccess && data ? (
+          {displayData ? (
             <div className="ai-stylist-results">
               <div className="ai-stylist-results__header">
                 <h2 className="ai-stylist-results__title">3 outfit gợi ý</h2>
                 <p className="ai-stylist-results__prompt">
-                  <em>&ldquo;{data.originalPrompt}&rdquo;</em>
+                  <em>&ldquo;{displayData.originalPrompt}&rdquo;</em>
                 </p>
-                {data.fromCache ? (
-                  <span className="ai-stylist-cached-badge">Từ cache</span>
+                {displayData.fromCache ? (
+                  <span className="ai-stylist-cached-badge">Từ bộ nhớ đệm</span>
                 ) : null}
               </div>
 
-              {data.outfits.length === 0 ? (
+              {displayData.outfits.length === 0 ? (
                 <div className="ai-stylist-empty">
                   <p>Chưa có outfit phù hợp. Thử mô tả khác nhé.</p>
                   <button
@@ -282,7 +272,7 @@ export default function AiStylistPage() {
                 </div>
               ) : (
                 <div className="ai-outfit-grid">
-                  {data.outfits.map((outfit) => (
+                  {displayData.outfits.map((outfit) => (
                     <OutfitResultCard
                       key={outfit.outfitNumber}
                       outfit={outfit}
@@ -294,7 +284,7 @@ export default function AiStylistPage() {
             </div>
           ) : null}
 
-          {!isPending && !isSuccess ? (
+          {showFeaturesCta ? (
             <div className="ai-stylist-cta">
               <div className="ai-stylist-cta__features">
                 {[

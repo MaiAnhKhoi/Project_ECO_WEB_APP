@@ -6,8 +6,12 @@ import type {
   ConversationSummary,
   OutfitRequest,
   OutfitResponse,
+  PageResponse,
   ProductRecommendRequest,
+  RecommendationHistory,
   RecommendationResponse,
+  StyleAnalysisHistoryItem,
+  StyleAnalysisResponse,
 } from "../types";
 
 interface ApiWrapper<T> {
@@ -15,14 +19,6 @@ interface ApiWrapper<T> {
   message: string;
   data: T;
   timestamp: number;
-}
-
-interface PageResponse<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
 }
 
 // ============================================================
@@ -84,6 +80,76 @@ export const fetchTrending = async (limit = 10): Promise<RecommendationResponse>
 // ============================================================
 // Behavior tracking (fire-and-forget)
 // ============================================================
+
+// ============================================================
+// Style Analysis
+// ============================================================
+
+export const analyzeStyle = async (
+  image: File,
+  userId?: number
+): Promise<StyleAnalysisResponse> => {
+  const formData = new FormData();
+  formData.append("image", image);
+  if (userId) formData.append("userId", String(userId));
+
+  const { data } = await api.post<ApiWrapper<StyleAnalysisResponse>>(
+    "/ai/style-analysis",
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  return data.data;
+};
+
+// ============================================================
+// AI History
+// ============================================================
+
+export const fetchStyleHistory = async (
+  page = 0,
+  size = 10
+): Promise<PageResponse<StyleAnalysisHistoryItem>> => {
+  const { data } = await api.get<ApiWrapper<PageResponse<StyleAnalysisHistoryItem>>>(
+    `/ai/history/style-analysis?page=${page}&size=${size}`
+  );
+  return data.data;
+};
+
+export const fetchStyleHistoryDetail = async (
+  historyId: number
+): Promise<StyleAnalysisHistoryItem> => {
+  const { data } = await api.get<ApiWrapper<StyleAnalysisHistoryItem>>(
+    `/ai/history/style-analysis/${historyId}`
+  );
+  return data.data;
+};
+
+export const fetchOutfitHistory = async (
+  page = 0,
+  size = 10
+): Promise<PageResponse<RecommendationHistory>> => {
+  const { data } = await api.get<ApiWrapper<PageResponse<RecommendationHistory>>>(
+    `/ai/history/outfits?page=${page}&size=${size}`
+  );
+  return data.data;
+};
+
+export const fetchOutfitHistoryDetail = async (logId: number): Promise<OutfitResponse> => {
+  const { data } = await api.get<ApiWrapper<OutfitResponse>>(
+    `/ai/history/outfits/${logId}`
+  );
+  return data.data;
+};
+
+export const fetchRecommendationHistory = async (
+  page = 0,
+  size = 10
+): Promise<PageResponse<RecommendationHistory>> => {
+  const { data } = await api.get<ApiWrapper<PageResponse<RecommendationHistory>>>(
+    `/ai/history/recommendations?page=${page}&size=${size}`
+  );
+  return data.data;
+};
 
 export const trackBehavior = (params: {
   productId?: number;

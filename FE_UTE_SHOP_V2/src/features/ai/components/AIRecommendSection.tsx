@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
+import { FiArrowRight, FiStar } from "react-icons/fi";
 import { useTrending } from "../hooks/useRecommendations";
 import { formatPrice } from "@/utils/formatPrice";
 import type { ProductSuggestion } from "../types";
@@ -64,7 +65,7 @@ interface AIRecommendSectionProps {
 }
 
 export default function AIRecommendSection({
-  title = "✨ Trending Hôm Nay",
+  title = "Trending hôm nay",
   subtitle = "Sản phẩm đang được yêu thích nhiều nhất",
   limit = 8,
 }: AIRecommendSectionProps) {
@@ -81,10 +82,7 @@ export default function AIRecommendSection({
         <div className="ai-recommend-section__header">
           <div>
             <div className="ai-recommend-section__badge" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                  fill="currentColor" />
-              </svg>
+              <FiStar size={14} strokeWidth={2} />
               AI Powered
             </div>
             <h2 className="ai-recommend-section__title">{title}</h2>
@@ -92,7 +90,7 @@ export default function AIRecommendSection({
           </div>
           <Link to="/shop-default" className="ai-recommend-section__view-all btn-line">
             Xem tất cả
-            <span className="icon icon-arrow-right" aria-hidden="true" />
+            <FiArrowRight size={16} className="ms-1" aria-hidden="true" />
           </Link>
         </div>
 
@@ -112,12 +110,9 @@ export default function AIRecommendSection({
 
         <div className="ai-recommend-section__footer">
           <Link to="/ai-stylist" className="ai-stylist-cta-link">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                fill="currentColor" />
-            </svg>
+            <FiStar size={16} strokeWidth={2} aria-hidden="true" />
             Thử AI Stylist — Tạo outfit hoàn hảo cho bạn
-            <span className="icon icon-arrow-right" aria-hidden="true" />
+            <FiArrowRight size={16} aria-hidden="true" />
           </Link>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
+import { FiZap } from "react-icons/fi";
 import { formatPrice } from "@/utils/formatPrice";
 import type { ChatMessage, ProductSuggestion } from "../../types";
 
@@ -21,7 +22,7 @@ export const MessageBubble = memo(({ msg }: { msg: ChatMessage }) => (
   >
     {msg.role === "assistant" && (
       <div className="ai-chat-bubble__avatar" aria-hidden="true">
-        <span className="icon icon-star" />
+        <FiZap size={16} strokeWidth={2} />
       </div>
     )}
     <div className="ai-chat-bubble__body">

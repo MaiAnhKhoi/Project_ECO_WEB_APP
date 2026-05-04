@@ -13,7 +13,7 @@ import Testimonials from "@/components/homes/homes/Testimonials";
 // import Newsletter from "@/components/modals/Newsletter";
 import MetaComponent from "@/components/common/MetaComponent";
 import { createPageMetadata } from "@/config/shop";
-import AIRecommendSection from "@/features/ai/components/AIRecommendSection";
+import ProductsTrendingSection from "@/components/homes/homes/ProductsTrendingSection";
 
 const metadata = createPageMetadata("Trang chủ");
 
@@ -26,8 +26,8 @@ export default function HomePage() {
       <Products />
       <ProductsBestSeller />
       <ProductsBestDeal />
-      <ProductsBestView  />
-      <AIRecommendSection />
+      <ProductsBestView />
+      <ProductsTrendingSection />
       {/* <Banner /> */}
       <Categories />
       <ProductsSecondary />

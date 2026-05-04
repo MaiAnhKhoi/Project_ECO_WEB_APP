@@ -97,3 +97,58 @@ export interface ConversationDetail extends ConversationSummary {
 }
 
 export type ChatStatus = "idle" | "loading" | "error" | "success";
+
+// ============================================================
+// AI Style Analysis
+// ============================================================
+
+export type Gender = "MALE" | "FEMALE" | "UNISEX" | "UNKNOWN";
+
+export interface StyleAnalysisResponse {
+  gender: Gender;
+  bodyType: string;
+  skinTone: string;
+  recommendedStyle: string;
+  confidenceScore: number;
+  analyzedImageUrl: string;
+  /** true when AI is unsure about gender — prompt user to confirm */
+  needsGenderConfirmation: boolean;
+  products: ProductSuggestion[];
+  fromCache: boolean;
+  profileId?: number;
+}
+
+// ============================================================
+// AI History
+// ============================================================
+
+export interface StyleAnalysisHistoryItem {
+  id: number;
+  imageUrl: string;
+  bodyType: string;
+  skinTone: string;
+  recommendedStyle: string;
+  gender: Gender | null;
+  /** 0–1 từ BE (result_json); thiếu thì có thể null. */
+  confidenceScore?: number | null;
+  needsGenderConfirmation?: boolean | null;
+  createdAt: string;
+  products: ProductSuggestion[];
+}
+
+export interface RecommendationHistory {
+  id: number;
+  type: string;
+  userPrompt: string | null;
+  tokensUsed: number | null;
+  cacheHit: boolean;
+  createdAt: string;
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}

@@ -13,7 +13,11 @@ export default function Nav() {
     pathname.startsWith("/blog") ||
     pathname.startsWith("/blog-single") ||
     pathname.startsWith("/blog-category");
-  const isAiStylistActive = pathname.startsWith("/ai-stylist");
+  const isAiActive =
+    pathname.startsWith("/ai-stylist") ||
+    pathname.startsWith("/ai-style-analysis") ||
+    pathname.startsWith("/ai-history") ||
+    pathname.startsWith("/ai-dashboard");
   const isAboutActive = pathname.startsWith("/about-us");
   const isContactActive = pathname.startsWith("/contact-us");
 
@@ -86,14 +90,44 @@ export default function Nav() {
         </Link>
       </li>
 
-      {/* AI STYLIST */}
-      <li className="menu-item">
-        <Link
-          to="/ai-stylist"
-          className={`item-link ${isAiStylistActive ? "menuActive" : ""}`}
+      {/* DỊCH VỤ — AI features dropdown */}
+      <li className="menu-item position-relative">
+        <a
+          href="#"
+          className={`item-link ${isAiActive ? "menuActive" : ""}`}
+          onClick={(e) => e.preventDefault()}
         >
-          AI Stylist
-        </Link>
+          Dịch vụ
+          <i className="icon icon-arr-down" />
+        </a>
+        <div className="sub-menu sub-menu-style-3">
+          <ul className="menu-list">
+            <li>
+              <Link
+                to="/ai-stylist"
+                className={`menu-link-text link ${pathname.startsWith("/ai-stylist") && !pathname.startsWith("/ai-style") ? "menuActive" : ""}`}
+              >
+                AI Stylist
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/ai-style-analysis"
+                className={`menu-link-text link ${pathname.startsWith("/ai-style-analysis") ? "menuActive" : ""}`}
+              >
+                Style Analysis
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/ai-history"
+                className={`menu-link-text link ${pathname.startsWith("/ai-history") || pathname.startsWith("/ai-dashboard") ? "menuActive" : ""}`}
+              >
+                Lịch sử AI
+              </Link>
+            </li>
+          </ul>
+        </div>
       </li>
 
       {/* BLOG */}

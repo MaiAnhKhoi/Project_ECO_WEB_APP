@@ -1,8 +1,7 @@
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { formatPrice } from "@/utils/formatPrice";
 import type { Outfit, OutfitItem } from "../../types";
-import { saveOutfitEntry } from "../../lib/savedOutfitsStorage";
 
 const OutfitItemRow = memo(({ item }: { item: OutfitItem }) => (
   <Link to={`/product-detail/${item.productId}`} className="ai-outfit-item">
@@ -34,14 +33,6 @@ export const OutfitResultCard = memo(function OutfitResultCard({
   outfit,
   onAddItemsToCart,
 }: OutfitResultCardProps) {
-  const [saveHint, setSaveHint] = useState<string | null>(null);
-
-  const handleSave = useCallback(() => {
-    const ok = saveOutfitEntry(outfit);
-    setSaveHint(ok ? "Đã lưu vào thiết bị" : "Outfit này đã được lưu trước đó");
-    window.setTimeout(() => setSaveHint(null), 2800);
-  }, [outfit]);
-
   const handleAddAll = useCallback(() => {
     onAddItemsToCart(outfit.items.map((i) => i.productId));
   }, [outfit.items, onAddItemsToCart]);
@@ -80,32 +71,18 @@ export const OutfitResultCard = memo(function OutfitResultCard({
       <div className="ai-outfit-card__actions">
         <Link
           to={shopFilterUrl}
-          className="tf-btn btn-out-line-primary w-100 justify-content-center"
+          className="ai-outfit-card__link-shop"
         >
           Xem trong shop
         </Link>
-        <div className="ai-outfit-card__actions-row">
-          <button
-            type="button"
-            className="tf-btn btn-primary animate-btn flex-grow-1 justify-content-center"
-            onClick={handleAddAll}
-          >
-            <span className="icon icon-cart2" style={{ marginRight: 6 }} aria-hidden="true" />
-            Thêm vào giỏ
-          </button>
-          <button
-            type="button"
-            className="tf-btn btn-out-line-dark flex-grow-1 justify-content-center"
-            onClick={handleSave}
-          >
-            Lưu outfit
-          </button>
-        </div>
-        {saveHint ? (
-          <p className="ai-outfit-card__hint text-center mb-0" role="status">
-            {saveHint}
-          </p>
-        ) : null}
+        <button
+          type="button"
+          className="tf-btn btn-primary btn-small ai-outfit-card__btn-cart"
+          onClick={handleAddAll}
+        >
+          <span className="icon icon-cart2" style={{ marginRight: 6 }} aria-hidden="true" />
+          Thêm giỏ hàng
+        </button>
       </div>
     </div>
   );

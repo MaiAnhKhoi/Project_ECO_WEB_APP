@@ -18,7 +18,7 @@ import ShareModal from "@/components/modals/ShareModal";
 import WOW from "@/utlis/wow";
 import CartComponent from "@/components/modals/CartComponent";
 import DbSidebar from "@/components/modals/DbSidebar";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes, useLocation, Navigate } from "react-router-dom";
 import ScrollTopBehaviour from "./components/common/ScrollToTopBehaviour";
 import HomePage from "./pages";
 import ProductPageDefault from "./pages/products/shop-default";
@@ -60,10 +60,14 @@ import VerifyEmail from "./components/modals/VerifyEmail";
 import { lazy, Suspense } from "react";
 import ChatbotWidget from "@/features/ai/components/ChatbotWidget";
 import "@/features/ai/components/chat/AiChatDrawer.scss";
-import "@/features/ai/components/AIRecommendSection.scss";
 import "@/features/ai/pages/AiStylistPage.scss";
+import "@/features/ai/pages/AiStyleAnalysisPage.scss";
+import "@/features/ai/pages/AiHistoryPage.scss";
 
 const AiStylistPage = lazy(() => import("@/features/ai/pages/AiStylistPage"));
+const AiOutfitDetailPage = lazy(() => import("@/features/ai/pages/AiOutfitDetailPage"));
+const AiStyleAnalysisPage = lazy(() => import("@/features/ai/pages/AiStyleAnalysisPage"));
+const AiHistoryPage = lazy(() => import("@/features/ai/pages/AiHistoryPage"));
 
 function App(): React.JSX.Element {
   const { pathname } = useLocation();
@@ -292,6 +296,40 @@ return (
                   <Suspense fallback={<div className="tf-preload"><span className="loader" /></div>}>
                     <AiStylistPage />
                   </Suspense>
+                }
+              />
+
+              <Route
+                path="ai-outfit/:id"
+                element={
+                  <PrivateRoute>
+                    <Suspense fallback={<div className="tf-preload"><span className="loader" /></div>}>
+                      <AiOutfitDetailPage />
+                    </Suspense>
+                  </PrivateRoute>
+                }
+              />
+
+              {/* AI Style Analysis */}
+              <Route
+                path="ai-style-analysis"
+                element={
+                  <Suspense fallback={<div className="tf-preload"><span className="loader" /></div>}>
+                    <AiStyleAnalysisPage />
+                  </Suspense>
+                }
+              />
+
+              {/* AI History */}
+              <Route path="ai-dashboard" element={<Navigate to="/ai-history" replace />} />
+              <Route
+                path="ai-history"
+                element={
+                  <PrivateRoute>
+                    <Suspense fallback={<div className="tf-preload"><span className="loader" /></div>}>
+                      <AiHistoryPage />
+                    </Suspense>
+                  </PrivateRoute>
                 }
               />
 

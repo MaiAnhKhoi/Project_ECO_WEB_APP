@@ -1,12 +1,26 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { fetchConversation, fetchChatHistory, sendChatMessage } from "../api/aiApi";
-import type { ChatMessage, ChatResponse } from "../types";
+import type { ChatMessage, ChatResponse, ConversationDetail } from "../types";
+import { AI_CHAT_HISTORY_PREFIX } from "../queryKeys";
 
 export const AI_CHAT_KEYS = {
   history: (page: number) => ["ai", "chat", "history", page] as const,
   conversation: (id: number) => ["ai", "chat", "conversation", id] as const,
 };
+
+function mapDetailMessage(m: NonNullable<ConversationDetail["messages"]>[number]): ChatMessage {
+  const r = m.role?.toLowerCase();
+  const role: ChatMessage["role"] =
+    r === "user" || r === "assistant" || r === "system" ? r : "assistant";
+  return {
+    id: m.id,
+    role,
+    content: m.content,
+    createdAt: m.createdAt,
+    tokensUsed: m.tokensUsed,
+  };
+}
 
 // -----------------------------------------------------------------
 // useChatSession — manages local messages + mutation
@@ -41,7 +55,7 @@ export function useChatSession(sessionId?: string) {
       };
       setMessages((prev) => [...prev, assistantMsg]);
 
-      queryClient.invalidateQueries({ queryKey: ["ai", "chat", "history"] });
+      queryClient.invalidateQueries({ queryKey: AI_CHAT_HISTORY_PREFIX });
     },
     onError: () => {
       const errMsg: ChatMessage = {
@@ -65,6 +79,13 @@ export function useChatSession(sessionId?: string) {
     [mutation, conversationId]
   );
 
+  const loadConversation = useCallback(async (id: number) => {
+    const detail = await fetchConversation(id);
+    setMessages((detail.messages ?? []).map(mapDetailMessage));
+    setConversationId(detail.conversationId);
+    setCurrentSessionId(detail.sessionId);
+  }, []);
+
   const clearMessages = useCallback(() => {
     setMessages([]);
     setCurrentSessionId(undefined);
@@ -75,6 +96,7 @@ export function useChatSession(sessionId?: string) {
     messages,
     sendMessage,
     clearMessages,
+    loadConversation,
     isLoading: mutation.isPending,
     error: mutation.error,
     sessionId: currentSessionId,
