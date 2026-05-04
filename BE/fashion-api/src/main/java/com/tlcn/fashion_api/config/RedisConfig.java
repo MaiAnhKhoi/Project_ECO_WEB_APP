@@ -29,9 +29,9 @@ import java.util.Map;
  *
  * Cache names and TTLs:
  *   ai:trending      — 10 min  (trending products)
- *   ai:outfit        — 1 hour  (outfit generation per prompt)
- *   ai:products      — 5 min   (product recommendations)
- *   ai:faq           — 24 hours (FAQ/static responses)
+ *   ai:outfit        — 24 hours (outfit generation per prompt)
+ *   ai:products      — 12 hours (product recommendations)
+ *   ai:faq           — 24 hours (FAQ/static responses — reserved)
  *   products:detail  — 30 min  (product detail)
  *   products:list    — 5 min   (product listing)
  *
@@ -114,10 +114,10 @@ public class RedisConfig {
                 .entryTtl(Duration.ofMinutes(30)); // global default
 
         Map<String, RedisCacheConfiguration> cacheConfigs = new HashMap<>();
-        cacheConfigs.put(CACHE_AI_TRENDING,   defaults.entryTtl(Duration.ofMinutes(10)));
-        cacheConfigs.put(CACHE_AI_OUTFIT,     defaults.entryTtl(Duration.ofHours(1)));
-        cacheConfigs.put(CACHE_AI_PRODUCTS,   defaults.entryTtl(Duration.ofMinutes(5)));
-        cacheConfigs.put(CACHE_AI_FAQ,        defaults.entryTtl(Duration.ofHours(24)));
+        cacheConfigs.put(CACHE_AI_TRENDING,    defaults.entryTtl(Duration.ofMinutes(10)));
+        cacheConfigs.put(CACHE_AI_OUTFIT,      defaults.entryTtl(Duration.ofHours(24)));  // 24h: same prompt → no re-call
+        cacheConfigs.put(CACHE_AI_PRODUCTS,    defaults.entryTtl(Duration.ofHours(12)));  // 12h: product recs
+        cacheConfigs.put(CACHE_AI_FAQ,         defaults.entryTtl(Duration.ofHours(24)));
         cacheConfigs.put(CACHE_PRODUCT_DETAIL, defaults.entryTtl(Duration.ofMinutes(30)));
         cacheConfigs.put(CACHE_PRODUCT_LIST,   defaults.entryTtl(Duration.ofMinutes(5)));
 

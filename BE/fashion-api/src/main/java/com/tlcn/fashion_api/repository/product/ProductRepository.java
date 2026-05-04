@@ -223,8 +223,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>,JpaSpeci
             "variants.stocks",
             "variants.attributeValues",
             "variants.attributeValues.attribute",
-            "variants.attributeValues.attributeValue",
-            "categories"
+            "variants.attributeValues.attributeValue"
     })
     @Query("""
     SELECT DISTINCT p FROM Product p
@@ -244,6 +243,21 @@ public interface ProductRepository extends JpaRepository<Product, Long>,JpaSpeci
     Brand findBrandById(@Param("brandId") Long brandId);
 
     long countByStatus(String status);
+
+    @Query("SELECT p.id FROM Product p WHERE p.status = :status ORDER BY p.soldCount DESC")
+    List<Long> findIdsByStatusOrderBySoldCountDesc(@Param("status") String status, Pageable pageable);
+
+    /**
+     * Nạp đủ quan hệ cho gợi ý style (ảnh, variant + tồn kho, liên kết category).
+     */
+    @EntityGraph(attributePaths = {
+            "images",
+            "variants",
+            "variants.stocks",
+            "productCategories"
+    })
+    @Query("SELECT p FROM Product p WHERE p.id IN :ids")
+    List<Product> findByIdInWithStyleRecommendationGraph(@Param("ids") List<Long> ids);
 
     @Query("SELECT p FROM Product p ORDER BY p.soldCount DESC")
     List<Product> findTopProductsBySoldCount(Pageable pageable);

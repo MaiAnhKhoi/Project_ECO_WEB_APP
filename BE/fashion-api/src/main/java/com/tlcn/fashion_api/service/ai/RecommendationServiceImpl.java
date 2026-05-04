@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tlcn.fashion_api.ai.provider.AIProvider;
 import com.tlcn.fashion_api.ai.util.PromptBuilder;
 import com.tlcn.fashion_api.common.exception.BadRequestException;
+import com.tlcn.fashion_api.common.exception.ResourceNotFoundException;
 import com.tlcn.fashion_api.config.RedisConfig;
 import com.tlcn.fashion_api.dto.request.ai.OutfitRequest;
 import com.tlcn.fashion_api.dto.request.ai.ProductRecommendRequest;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,7 +40,7 @@ import java.util.stream.Collectors;
  *   <li>Sanitize + hash prompt → cache key</li>
  *   <li>Cache lookup via AiRecommendationLogRepository</li>
  *   <li>If miss: parse budget → query DB (max 15 products) → call AI → parse JSON → enrich</li>
- *   <li>Save log async → return OutfitResponse</li>
+ *   <li>Save log async → return OutfitResponse (cache hit: mirror log per user + correct logId)</li>
  * </ol>
  *
  * <h3>Flow — Trending:</h3>
@@ -68,6 +70,21 @@ public class RecommendationServiceImpl implements RecommendationService {
     // =========================================================================
 
     @Override
+    public OutfitResponse getOutfitFromHistory(Long logId, Long userId) {
+        if (userId == null) throw new BadRequestException("Thiếu thông tin người dùng");
+        AiRecommendationLog log_ = logRepository.findById(logId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch sử outfit"));
+        if (!Objects.equals(userId, log_.getUserId())) {
+            throw new ResourceNotFoundException("Không tìm thấy lịch sử outfit");
+        }
+        if (log_.getRecommendationType() != AiRecommendationLog.RecommendationType.OUTFIT) {
+            throw new BadRequestException("Bản ghi không phải outfit");
+        }
+        String prompt = Optional.ofNullable(log_.getUserPrompt()).orElse("");
+        return parseOutfitFromCachedLog(log_, prompt);
+    }
+
+    @Override
     public OutfitResponse generateOutfit(OutfitRequest request, Long userId) {
         String sanitized = PromptBuilder.sanitize(request.getPrompt());
         if (sanitized.isBlank()) throw new BadRequestException("Yêu cầu outfit không hợp lệ");
@@ -81,7 +98,22 @@ public class RecommendationServiceImpl implements RecommendationService {
 
         if (cached.isPresent()) {
             log.debug("Outfit cache HIT — hash={}", promptHash);
-            return parseOutfitFromCachedLog(cached.get(), sanitized);
+            AiRecommendationLog src = cached.get();
+            Long mirrorId = null;
+            if (userId != null) {
+                mirrorId = saveOutfitHistoryMirrorFromCache(promptHash, sanitized, src, userId);
+            }
+            OutfitResponse base = parseOutfitFromCachedLog(src, sanitized);
+            if (mirrorId != null) {
+                return OutfitResponse.builder()
+                        .originalPrompt(base.getOriginalPrompt())
+                        .outfits(base.getOutfits())
+                        .tokensUsed(base.getTokensUsed())
+                        .fromCache(base.isFromCache())
+                        .logId(mirrorId)
+                        .build();
+            }
+            return base;
         }
 
         // ----- build context -----
@@ -257,12 +289,15 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     /**
-     * Parse AI JSON response → list of OutfitDto with enriched product data.
-     * Robust against markdown code fences and extra text.
+     * Parse AI JSON → list of OutfitDto, enriched with product data from context.
+     * Items whose productId is not found in the context map are included as fallback entries
+     * (with AI-provided name and zero price) so outfits are never silently empty.
      */
     private List<OutfitDto> parseAndEnrichOutfits(String aiContent, List<Product> contextProducts) {
+        if (aiContent == null || aiContent.isBlank()) return Collections.emptyList();
+
         Map<Long, Product> productMap = contextProducts.stream()
-                .collect(Collectors.toMap(Product::getId, p -> p));
+                .collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
 
         try {
             String json = extractJson(aiContent);
@@ -277,6 +312,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                 List<OutfitItemDto> items = new ArrayList<>();
 
                 for (AiOutfitItemJson ai : ao.items()) {
+                    if (ai.productId() == null) continue;
                     Product p = productMap.get(ai.productId());
                     OutfitItemDto item;
                     if (p != null) {
@@ -291,9 +327,19 @@ public class RecommendationServiceImpl implements RecommendationService {
                                 .build();
                         total = total.add(price);
                     } else {
-                        // AI hallucinated an ID — skip
-                        log.debug("Skipping unknown productId={} from AI response", ai.productId());
-                        continue;
+                        // Product ID from AI not in context — include as fallback so outfit is not empty
+                        log.debug("Outfit enrich: productId={} not found in context map, using AI fallback", ai.productId());
+                        String fallbackName = Optional.ofNullable(ai.productName())
+                                .filter(n -> !n.isBlank())
+                                .orElse("Sản phẩm #" + ai.productId());
+                        item = OutfitItemDto.builder()
+                                .productId(ai.productId())
+                                .productName(fallbackName)
+                                .slug(null)
+                                .imageUrl(null)
+                                .price(BigDecimal.ZERO)
+                                .role(ai.role())
+                                .build();
                     }
                     items.add(item);
                 }
@@ -319,16 +365,22 @@ public class RecommendationServiceImpl implements RecommendationService {
 
     private OutfitResponse parseOutfitFromCachedLog(AiRecommendationLog log_, String originalPrompt) {
         try {
-            // Re-parse cached AI response — but enrich from current DB state
-            List<Long> contextIds = Arrays.stream(
-                            Optional.ofNullable(log_.getProductsContextIds())
-                                    .orElse("").split(","))
+            // Re-fetch context products from DB so enrichment uses current data
+            List<Long> contextIds = Optional.ofNullable(log_.getProductsContextIds())
                     .filter(s -> !s.isBlank())
-                    .map(Long::parseLong)
-                    .toList();
+                    .map(csv -> Arrays.stream(csv.split(","))
+                            .filter(s -> !s.isBlank())
+                            .map(s -> {
+                                try { return Long.parseLong(s.trim()); }
+                                catch (NumberFormatException ex) { return null; }
+                            })
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList()))
+                    .orElse(Collections.emptyList());
 
             List<Product> contextProducts = contextIds.isEmpty()
-                    ? productRepository.findByStatusOrderBySoldCountDesc("ACTIVE", PageRequest.of(0, MAX_CONTEXT_PRODUCTS))
+                    ? productRepository.findByStatusOrderBySoldCountDesc(
+                            "ACTIVE", PageRequest.of(0, MAX_CONTEXT_PRODUCTS))
                     : productRepository.findAllByIdInWithDetails(contextIds);
 
             List<OutfitDto> outfits = log_.getAiResponse() != null
@@ -496,6 +548,32 @@ public class RecommendationServiceImpl implements RecommendationService {
                     .build());
         } catch (Exception e) {
             log.warn("Failed to save recommendation log: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Khi cache hit, bản ghi gốc có thể thuộc user khác hoặc không có userId — tạo bản ghi mirror
+     * theo user hiện tại để lịch sử GET /history/outfits đầy đủ và logId trả về khớp quyền xem.
+     */
+    private Long saveOutfitHistoryMirrorFromCache(
+            String promptHash, String sanitized, AiRecommendationLog src, Long userId) {
+        try {
+            AiRecommendationLog saved = logRepository.save(AiRecommendationLog.builder()
+                    .userId(userId)
+                    .promptHash(promptHash)
+                    .userPrompt(sanitized)
+                    .aiResponse(src.getAiResponse())
+                    .productsContextIds(src.getProductsContextIds())
+                    .tokensUsed(Optional.ofNullable(src.getTokensUsed()).orElse(0))
+                    .recommendationType(AiRecommendationLog.RecommendationType.OUTFIT)
+                    .status(AiRecommendationLog.LogStatus.SUCCESS)
+                    .errorMessage(null)
+                    .cacheHit(true)
+                    .build());
+            return saved.getId();
+        } catch (Exception e) {
+            log.warn("Failed to save outfit cache-hit history for user {}: {}", userId, e.getMessage());
+            return null;
         }
     }
 

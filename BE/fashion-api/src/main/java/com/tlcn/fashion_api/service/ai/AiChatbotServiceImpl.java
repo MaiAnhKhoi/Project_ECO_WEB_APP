@@ -15,7 +15,6 @@ import com.tlcn.fashion_api.repository.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -183,7 +182,7 @@ public class AiChatbotServiceImpl implements AiChatbotService {
         if (!productMatcher.find()) return;
 
         List<Product> products = productRepository.findByStatusOrderBySoldCountDesc(
-                "ACTIVE", PageRequest.of(0, 10));
+                "active", PageRequest.of(0, 10));
 
         if (products.isEmpty()) return;
 
@@ -233,7 +232,7 @@ public class AiChatbotServiceImpl implements AiChatbotService {
         Matcher matcher = PRODUCT_QUERY_PATTERN.matcher(userMessage);
         if (!matcher.find()) return Collections.emptyList();
 
-        return productRepository.findByStatusOrderBySoldCountDesc("ACTIVE", PageRequest.of(0, 3))
+        return productRepository.findByStatusOrderBySoldCountDesc("active", PageRequest.of(0, 3))
                 .stream()
                 .map(recommendationService::toSuggestionDto)
                 .toList();

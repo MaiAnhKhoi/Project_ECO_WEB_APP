@@ -88,6 +88,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,  "/api/ai/recommend/trending").permitAll()
                         // Behavior tracking — fire-and-forget, no auth required
                         .requestMatchers(HttpMethod.POST, "/api/ai/behavior/track").permitAll()
+                        // Style analysis — image upload; auth enriches userId but not required
+                        .requestMatchers(HttpMethod.POST, "/api/ai/style-analysis").permitAll()
                         // Chat history + conversation detail — require auth (handled in controller)
                         .requestMatchers(HttpMethod.GET,  "/api/ai/chat/conversation/**").permitAll()
 

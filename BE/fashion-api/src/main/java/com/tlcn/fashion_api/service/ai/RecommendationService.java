@@ -23,4 +23,9 @@ public interface RecommendationService {
      * Cached 10 phút.
      */
     RecommendationResponse getTrending(int limit);
+
+    /**
+     * Khôi phục kết quả outfit đã lưu theo id bản ghi lịch sử (chỉ chủ sở hữu).
+     */
+    OutfitResponse getOutfitFromHistory(Long logId, Long userId);
 }
